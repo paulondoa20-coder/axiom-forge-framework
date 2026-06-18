@@ -9,38 +9,195 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TrustRouteImport } from './routes/trust'
+import { Route as ScanRouteImport } from './routes/scan'
+import { Route as RadarRouteImport } from './routes/radar'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as MessagesRouteImport } from './routes/messages'
+import { Route as FlashRouteImport } from './routes/flash'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
 
+const TrustRoute = TrustRouteImport.update({
+  id: '/trust',
+  path: '/trust',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScanRoute = ScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RadarRoute = RadarRouteImport.update({
+  id: '/radar',
+  path: '/radar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MessagesRoute = MessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FlashRoute = FlashRouteImport.update({
+  id: '/flash',
+  path: '/flash',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAssistantRoute = ApiAssistantRouteImport.update({
+  id: '/api/assistant',
+  path: '/api/assistant',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/flash': typeof FlashRoute
+  '/messages': typeof MessagesRoute
+  '/notifications': typeof NotificationsRoute
+  '/profile': typeof ProfileRoute
+  '/radar': typeof RadarRoute
+  '/scan': typeof ScanRoute
+  '/trust': typeof TrustRoute
+  '/api/assistant': typeof ApiAssistantRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/flash': typeof FlashRoute
+  '/messages': typeof MessagesRoute
+  '/notifications': typeof NotificationsRoute
+  '/profile': typeof ProfileRoute
+  '/radar': typeof RadarRoute
+  '/scan': typeof ScanRoute
+  '/trust': typeof TrustRoute
+  '/api/assistant': typeof ApiAssistantRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/flash': typeof FlashRoute
+  '/messages': typeof MessagesRoute
+  '/notifications': typeof NotificationsRoute
+  '/profile': typeof ProfileRoute
+  '/radar': typeof RadarRoute
+  '/scan': typeof ScanRoute
+  '/trust': typeof TrustRoute
+  '/api/assistant': typeof ApiAssistantRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/flash'
+    | '/messages'
+    | '/notifications'
+    | '/profile'
+    | '/radar'
+    | '/scan'
+    | '/trust'
+    | '/api/assistant'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/flash'
+    | '/messages'
+    | '/notifications'
+    | '/profile'
+    | '/radar'
+    | '/scan'
+    | '/trust'
+    | '/api/assistant'
+  id:
+    | '__root__'
+    | '/'
+    | '/flash'
+    | '/messages'
+    | '/notifications'
+    | '/profile'
+    | '/radar'
+    | '/scan'
+    | '/trust'
+    | '/api/assistant'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  FlashRoute: typeof FlashRoute
+  MessagesRoute: typeof MessagesRoute
+  NotificationsRoute: typeof NotificationsRoute
+  ProfileRoute: typeof ProfileRoute
+  RadarRoute: typeof RadarRoute
+  ScanRoute: typeof ScanRoute
+  TrustRoute: typeof TrustRoute
+  ApiAssistantRoute: typeof ApiAssistantRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/trust': {
+      id: '/trust'
+      path: '/trust'
+      fullPath: '/trust'
+      preLoaderRoute: typeof TrustRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scan': {
+      id: '/scan'
+      path: '/scan'
+      fullPath: '/scan'
+      preLoaderRoute: typeof ScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/radar': {
+      id: '/radar'
+      path: '/radar'
+      fullPath: '/radar'
+      preLoaderRoute: typeof RadarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/messages': {
+      id: '/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof MessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/flash': {
+      id: '/flash'
+      path: '/flash'
+      fullPath: '/flash'
+      preLoaderRoute: typeof FlashRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +205,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/assistant': {
+      id: '/api/assistant'
+      path: '/api/assistant'
+      fullPath: '/api/assistant'
+      preLoaderRoute: typeof ApiAssistantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  FlashRoute: FlashRoute,
+  MessagesRoute: MessagesRoute,
+  NotificationsRoute: NotificationsRoute,
+  ProfileRoute: ProfileRoute,
+  RadarRoute: RadarRoute,
+  ScanRoute: ScanRoute,
+  TrustRoute: TrustRoute,
+  ApiAssistantRoute: ApiAssistantRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
