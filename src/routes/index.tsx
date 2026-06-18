@@ -1,29 +1,39 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { AppShell } from "@/components/layout/AppShell";
+import { SmartHero } from "@/components/home/SmartHero";
+import { HubGrid } from "@/components/home/HubGrid";
+import { LiveStrip } from "@/components/home/LiveStrip";
+import { SmartSuggestions } from "@/components/home/SmartSuggestions";
+import { TrustHint } from "@/components/home/TrustHint";
+import { RecentActivity } from "@/components/home/RecentActivity";
+import { Opportunities } from "@/components/home/Opportunities";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Your App" },
-      { name: "description", content: "Replace this with a one-sentence description of your app." },
-      { property: "og:title", content: "Your App" },
-      { property: "og:description", content: "Replace this with a one-sentence description of your app." },
+      { title: "Home — VITALA" },
+      {
+        name: "description",
+        content:
+          "VITALA — un centre intelligent pour publier, exprimer un besoin, découvrir et vérifier en toute confiance.",
+      },
     ],
   }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <AppShell>
+      <div className="space-y-7 animate-[fade-up_0.5s_var(--ease-smooth)_both]">
+        <SmartHero />
+        <HubGrid />
+        <LiveStrip />
+        <Opportunities />
+        <SmartSuggestions />
+        <TrustHint />
+        <RecentActivity />
+      </div>
+    </AppShell>
   );
 }
