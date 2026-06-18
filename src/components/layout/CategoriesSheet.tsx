@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { X, User, MessageCircle, Bell, ShieldCheck, ScanSearch, Sparkles } from "lucide-react";
+import { X, User, MessageCircle, Bell, ShieldCheck, ScanSearch, Sparkles, GraduationCap, Palette } from "lucide-react";
 
 type Shortcut = {
   to: string;
@@ -10,6 +10,8 @@ type Shortcut = {
 };
 
 const SHORTCUTS: Shortcut[] = [
+  { to: "/talents", label: "Talents & Savoir Vivant", hint: "Apprendre & transmettre", icon: GraduationCap, color: "var(--radar)" },
+  { to: "/creation", label: "Espace de création", hint: "Projets & collaborations", icon: Palette, color: "var(--flash)" },
   { to: "/profile", label: "Profil", hint: "Identité & présence", icon: User, color: "var(--radar)" },
   { to: "/messages", label: "Messages", hint: "Conversations vivantes", icon: MessageCircle, color: "var(--flash)" },
   { to: "/notifications", label: "Notifications", hint: "Signaux calmes", icon: Bell, color: "var(--scan)" },

@@ -10,18 +10,25 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TrustRouteImport } from './routes/trust'
+import { Route as TalentsRouteImport } from './routes/talents'
 import { Route as ScanRouteImport } from './routes/scan'
 import { Route as RadarRouteImport } from './routes/radar'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as FlashRouteImport } from './routes/flash'
+import { Route as CreationRouteImport } from './routes/creation'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
 
 const TrustRoute = TrustRouteImport.update({
   id: '/trust',
   path: '/trust',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TalentsRoute = TalentsRouteImport.update({
+  id: '/talents',
+  path: '/talents',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ScanRoute = ScanRouteImport.update({
@@ -54,6 +61,11 @@ const FlashRoute = FlashRouteImport.update({
   path: '/flash',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CreationRoute = CreationRouteImport.update({
+  id: '/creation',
+  path: '/creation',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -67,35 +79,41 @@ const ApiAssistantRoute = ApiAssistantRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/creation': typeof CreationRoute
   '/flash': typeof FlashRoute
   '/messages': typeof MessagesRoute
   '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/radar': typeof RadarRoute
   '/scan': typeof ScanRoute
+  '/talents': typeof TalentsRoute
   '/trust': typeof TrustRoute
   '/api/assistant': typeof ApiAssistantRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/creation': typeof CreationRoute
   '/flash': typeof FlashRoute
   '/messages': typeof MessagesRoute
   '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/radar': typeof RadarRoute
   '/scan': typeof ScanRoute
+  '/talents': typeof TalentsRoute
   '/trust': typeof TrustRoute
   '/api/assistant': typeof ApiAssistantRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/creation': typeof CreationRoute
   '/flash': typeof FlashRoute
   '/messages': typeof MessagesRoute
   '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/radar': typeof RadarRoute
   '/scan': typeof ScanRoute
+  '/talents': typeof TalentsRoute
   '/trust': typeof TrustRoute
   '/api/assistant': typeof ApiAssistantRoute
 }
@@ -103,46 +121,54 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/creation'
     | '/flash'
     | '/messages'
     | '/notifications'
     | '/profile'
     | '/radar'
     | '/scan'
+    | '/talents'
     | '/trust'
     | '/api/assistant'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/creation'
     | '/flash'
     | '/messages'
     | '/notifications'
     | '/profile'
     | '/radar'
     | '/scan'
+    | '/talents'
     | '/trust'
     | '/api/assistant'
   id:
     | '__root__'
     | '/'
+    | '/creation'
     | '/flash'
     | '/messages'
     | '/notifications'
     | '/profile'
     | '/radar'
     | '/scan'
+    | '/talents'
     | '/trust'
     | '/api/assistant'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CreationRoute: typeof CreationRoute
   FlashRoute: typeof FlashRoute
   MessagesRoute: typeof MessagesRoute
   NotificationsRoute: typeof NotificationsRoute
   ProfileRoute: typeof ProfileRoute
   RadarRoute: typeof RadarRoute
   ScanRoute: typeof ScanRoute
+  TalentsRoute: typeof TalentsRoute
   TrustRoute: typeof TrustRoute
   ApiAssistantRoute: typeof ApiAssistantRoute
 }
@@ -154,6 +180,13 @@ declare module '@tanstack/react-router' {
       path: '/trust'
       fullPath: '/trust'
       preLoaderRoute: typeof TrustRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/talents': {
+      id: '/talents'
+      path: '/talents'
+      fullPath: '/talents'
+      preLoaderRoute: typeof TalentsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/scan': {
@@ -198,6 +231,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FlashRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/creation': {
+      id: '/creation'
+      path: '/creation'
+      fullPath: '/creation'
+      preLoaderRoute: typeof CreationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -217,12 +257,14 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CreationRoute: CreationRoute,
   FlashRoute: FlashRoute,
   MessagesRoute: MessagesRoute,
   NotificationsRoute: NotificationsRoute,
   ProfileRoute: ProfileRoute,
   RadarRoute: RadarRoute,
   ScanRoute: ScanRoute,
+  TalentsRoute: TalentsRoute,
   TrustRoute: TrustRoute,
   ApiAssistantRoute: ApiAssistantRoute,
 }
