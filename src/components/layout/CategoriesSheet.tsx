@@ -1,5 +1,6 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { X, User, MessageCircle, Bell, ShieldCheck, ScanSearch, Sparkles, GraduationCap, Palette } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type Shortcut = {
   to: string;
@@ -20,6 +21,7 @@ const SHORTCUTS: Shortcut[] = [
 ];
 
 export function CategoriesSheet({ onClose }: { onClose: () => void }) {
+  const { pathname } = useLocation();
   return (
     <div
       className="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 backdrop-blur-sm animate-[fade-up_0.2s_var(--ease-smooth)_both]"
@@ -51,17 +53,28 @@ export function CategoriesSheet({ onClose }: { onClose: () => void }) {
         <div className="grid grid-cols-2 gap-2.5">
           {SHORTCUTS.map((s) => {
             const Icon = s.icon;
+            const active = pathname === s.to;
             return (
               <Link
                 key={s.to}
                 to={s.to}
                 onClick={onClose}
-                className="group relative overflow-hidden rounded-2xl p-3.5 text-left transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98]"
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "group relative overflow-hidden rounded-2xl p-3.5 text-left transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98]"
+                )}
                 style={{
-                  background: `color-mix(in oklch, ${s.color} 10%, var(--surface-1))`,
-                  boxShadow: `inset 0 0 0 1px color-mix(in oklch, ${s.color} 25%, transparent), 0 0 22px -12px ${s.color}`,
+                  background: `color-mix(in oklch, ${s.color} ${active ? "20%" : "10%"}, var(--surface-1))`,
+                  boxShadow: `inset 0 0 0 1px color-mix(in oklch, ${s.color} ${active ? "50%" : "25%"}, transparent), 0 0 22px -12px ${s.color}`,
                 }}
               >
+                {active && (
+                  <span
+                    className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full"
+                    style={{ background: s.color, boxShadow: `0 0 8px ${s.color}` }}
+                    aria-hidden
+                  />
+                )}
                 <div
                   className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full opacity-40 blur-2xl"
                   style={{ background: s.color }}

@@ -10,11 +10,18 @@ const items = [
   { to: "/radar", label: "Radar", icon: Radar, color: "var(--radar)" },
 ] as const;
 
-const espacesColor = "var(--trust)";
+const ESPACES = {
+  default: { label: "Espaces", color: "var(--trust)" },
+  "/talents": { label: "Talents", color: "var(--radar)" },
+  "/creation": { label: "Création", color: "var(--flash)" },
+} as const;
 
 export function FloatingDock() {
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
+  const espace = ESPACES[pathname as keyof typeof ESPACES] || ESPACES.default;
+  const active = pathname === "/talents" || pathname === "/creation";
+  const expanded = active || open;
 
   return (
     <>
@@ -85,38 +92,56 @@ export function FloatingDock() {
           {/* Espaces — opens categories sheet */}
           <button
             type="button"
-            aria-label="Espaces"
+            aria-label={espace.label}
             aria-expanded={open}
+            aria-current={active ? "page" : undefined}
             onClick={() => setOpen(true)}
             className={cn(
               "group relative flex h-11 items-center justify-center overflow-hidden rounded-full transition-all duration-300 ease-[var(--ease-spring)]",
-              open ? "gap-1.5 px-4" : "w-11 hover:scale-105 active:scale-95"
+              expanded ? "gap-1.5 px-4" : "w-11 hover:scale-105 active:scale-95"
             )}
             style={
-              open
+              expanded
                 ? {
-                    background: `color-mix(in oklch, ${espacesColor} 18%, transparent)`,
-                    boxShadow: `inset 0 0 0 1px color-mix(in oklch, ${espacesColor} 45%, transparent), 0 0 22px -6px ${espacesColor}`,
+                    background: `color-mix(in oklch, ${espace.color} 18%, transparent)`,
+                    boxShadow: `inset 0 0 0 1px color-mix(in oklch, ${espace.color} 45%, transparent), 0 0 22px -6px ${espace.color}`,
                   }
                 : undefined
             }
           >
+            {expanded && (
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-0 rounded-full opacity-60"
+                style={{
+                  background: `radial-gradient(60% 100% at 50% 50%, color-mix(in oklch, ${espace.color} 30%, transparent), transparent 70%)`,
+                  animation: "pulse-soft 2.6s ease-in-out infinite",
+                }}
+              />
+            )}
             <LayoutGrid
               className={cn(
                 "relative h-5 w-5 transition-all duration-300 ease-[var(--ease-spring)]",
-                open ? "scale-110" : "text-muted-foreground group-hover:text-foreground group-hover:-translate-y-0.5"
+                expanded ? "scale-110" : "text-muted-foreground group-hover:text-foreground group-hover:-translate-y-0.5"
               )}
-              style={open ? { color: espacesColor } : undefined}
-              strokeWidth={open ? 2.4 : 2}
+              style={expanded ? { color: espace.color } : undefined}
+              strokeWidth={expanded ? 2.4 : 2}
             />
-            {open && (
+            {expanded && (
               <span
                 className="relative text-[12px] font-semibold tracking-tight animate-[fade-in_0.25s_var(--ease-spring)_both]"
-                style={{ color: espacesColor }}
+                style={{ color: espace.color }}
               >
-                Espaces
+                {open ? "Espaces" : espace.label}
               </span>
             )}
+            <span
+              className={cn(
+                "pointer-events-none absolute -bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full transition-all duration-300",
+                active ? "opacity-100" : "opacity-0"
+              )}
+              style={{ background: espace.color, boxShadow: `0 0 8px ${espace.color}` }}
+            />
           </button>
         </div>
       </nav>
