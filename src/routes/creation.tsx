@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/layout/AppShell";
 import { HubHeader } from "@/components/hub/HubHeader";
 import { SmartCard } from "@/components/ui-kit/SmartCard";
+import { PageBreadcrumb } from "@/components/ui-kit/PageBreadcrumb";
 import { Button } from "@/components/ui/button";
 import {
   Palette,
@@ -134,6 +135,7 @@ function CreationPage() {
   return (
     <AppShell>
       <div className="mx-auto w-full max-w-3xl space-y-8">
+        <PageBreadcrumb />
         <HubHeader
           eyebrow="Espace"
           title="Espace de création"
