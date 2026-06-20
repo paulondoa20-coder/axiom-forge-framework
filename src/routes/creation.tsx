@@ -3,6 +3,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { HubHeader } from "@/components/hub/HubHeader";
 import { SmartCard } from "@/components/ui-kit/SmartCard";
 import { PageBreadcrumb } from "@/components/ui-kit/PageBreadcrumb";
+import { LivePulse } from "@/components/ui-kit/LivePulse";
 import { Button } from "@/components/ui/button";
 import {
   Palette,
@@ -19,6 +20,8 @@ import {
   Sparkles,
   GraduationCap,
   Compass,
+  Flame,
+  Zap,
 } from "lucide-react";
 
 export const Route = createFileRoute("/creation")({
@@ -67,7 +70,7 @@ const PROJECTS = [
     title: "Fanzine collectif — N°3",
     by: "Studio Atelier 9",
     members: 6,
-    status: "Ouvert aux contributions",
+    status: "Ouvert",
     needs: ["Illustrateur·rice", "Relecture"],
   },
   {
@@ -86,23 +89,31 @@ const PROJECTS = [
   },
 ];
 
+const LIVE_ITEMS = [
+  { icon: <Flame className="h-3 w-3" />, text: "Léna cherche un batteur pour ce week-end" },
+  { icon: <Zap className="h-3 w-3" />, text: "Tournage live — Plein Cadre, ce soir 20h" },
+  { icon: <Sparkles className="h-3 w-3" />, text: "Fanzine N°3 : 4 contributions reçues aujourd'hui" },
+  { icon: <Rocket className="h-3 w-3" />, text: "2 nouveaux studios viennent d'ouvrir" },
+  { icon: <Flame className="h-3 w-3" />, text: "Casting illustration — réponse avant vendredi" },
+];
+
 const STEPS = [
   {
     icon: Lightbulb,
-    title: "Posez l'idée",
-    desc: "Décrivez votre projet en quelques lignes, même brut.",
+    title: "Balance l'idée",
+    desc: "Deux lignes, même brouillon. L'important c'est que ça sorte.",
     step: "01",
   },
   {
     icon: Users,
-    title: "Rassemblez",
-    desc: "Trouvez des co-créateurs, mentors et ressources autour de vous.",
+    title: "Monte l'équipe",
+    desc: "Trouve les bonnes mains, les bons mentors, les bonnes oreilles.",
     step: "02",
   },
   {
     icon: Rocket,
-    title: "Lancez",
-    desc: "Publiez une étape, partagez l'avancée, faites vivre l'œuvre.",
+    title: "Envoie",
+    desc: "Publie une étape, montre l'avancée, fais grandir ton truc.",
     step: "03",
   },
 ];
@@ -111,21 +122,21 @@ const RESOURCES = [
   {
     icon: GraduationCap,
     title: "Talents & savoirs",
-    desc: "Apprenez un geste, trouvez un mentor pour votre projet.",
+    desc: "Chope un geste, trouve un mentor pour ton projet.",
     to: "/talents",
     label: "Explorer",
   },
   {
     icon: Compass,
     title: "Radar local",
-    desc: "Repérez les studios et ateliers actifs autour de vous.",
+    desc: "Vois les studios et ateliers qui bougent autour de toi.",
     to: "/radar",
     label: "Ouvrir le radar",
   },
   {
     icon: MessageCircle,
     title: "Messages",
-    desc: "Discutez avec un collectif ou un porteur de projet.",
+    desc: "Tape direct un collectif ou un porteur de projet.",
     to: "/messages",
     label: "Mes messages",
   },
@@ -134,15 +145,17 @@ const RESOURCES = [
 function CreationPage() {
   return (
     <AppShell>
-      <div className="mx-auto w-full max-w-3xl space-y-8">
+      <div className="mx-auto w-full max-w-3xl space-y-8 motion-safe:animate-fade-in">
         <PageBreadcrumb />
         <HubHeader
           eyebrow="Espace"
           title="Espace de création"
-          description="Un atelier ouvert pour donner forme à vos projets et rencontrer celles et ceux qui les feront grandir."
+          description="L'atelier ouvert du quartier. Pose ton idée, monte l'équipe, envoie."
           color={ACCENT}
           icon={<Palette className="h-5 w-5" />}
         />
+
+        <LivePulse items={LIVE_ITEMS} accent={ACCENT} label="Ça tourne" />
 
         {/* HERO */}
         <SmartCard glow="flash" className="space-y-5">
@@ -159,12 +172,12 @@ function CreationPage() {
             </div>
             <div className="flex-1 space-y-1">
               <h2 className="text-base font-semibold leading-snug">
-                Faites éclore un projet, à votre rythme.
+                Sors ton projet du carton. À ton rythme.
               </h2>
               <p className="text-xs leading-relaxed text-muted-foreground">
-                Que vous écriviez, dessiniez, filmiez ou inventiez — l'Espace
-                de création vous donne un cadre vivant pour avancer ensemble,
-                trouver des collaborateurs et publier vos étapes.
+                Que tu écrives, dessines, filmes ou bidouilles — ici c'est un
+                cadre vivant pour avancer en équipe, trouver les bonnes
+                personnes et publier tes étapes sans pression.
               </p>
             </div>
           </div>
@@ -176,7 +189,7 @@ function CreationPage() {
               asChild
             >
               <a href="#nouveau">
-                <Plus className="h-3.5 w-3.5" /> Lancer un projet
+                <Plus className="h-3.5 w-3.5" /> Je lance mon projet
               </a>
             </Button>
             <Button
@@ -186,7 +199,7 @@ function CreationPage() {
               asChild
             >
               <a href="#projets">
-                <Users className="h-3.5 w-3.5" /> Rejoindre un projet
+                <Users className="h-3.5 w-3.5" /> Rejoindre une équipe
               </a>
             </Button>
           </div>
@@ -243,7 +256,7 @@ function CreationPage() {
             id="steps-heading"
             className="text-xs font-medium uppercase tracking-wider text-muted-foreground"
           >
-            Comment ça marche
+            Comment ça se passe
           </h3>
           <div className="grid gap-3 sm:grid-cols-3">
             {STEPS.map((s) => (
@@ -288,7 +301,7 @@ function CreationPage() {
               id="projects-heading"
               className="text-xs font-medium uppercase tracking-wider text-muted-foreground"
             >
-              Projets en mouvement
+              Projets qui bougent maintenant
             </h3>
             <Link
               to="/radar"
@@ -373,12 +386,12 @@ function CreationPage() {
               </div>
               <div className="flex-1 space-y-1">
                 <h3 className="text-base font-semibold">
-                  Prêt à lancer votre projet ?
+                  Prêt à lancer ton truc ?
                 </h3>
                 <p className="text-xs leading-relaxed text-muted-foreground">
-                  Un titre, une intention, vos envies de collaboration —
-                  c'est tout ce qu'il faut pour commencer. Vous pourrez
-                  enrichir la fiche plus tard.
+                  Un titre, une intention, deux mots sur qui tu cherches —
+                  c'est suffisant pour démarrer. T'enrichis la fiche plus
+                  tard, t'inquiète.
                 </p>
               </div>
             </div>
@@ -388,7 +401,7 @@ function CreationPage() {
                 className="w-full rounded-xl"
                 style={{ background: ACCENT, color: "var(--background)" }}
               >
-                <Plus className="h-3.5 w-3.5" /> Créer un projet
+                <Plus className="h-3.5 w-3.5" /> Je crée mon projet
               </Button>
               <Button
                 asChild
@@ -410,7 +423,7 @@ function CreationPage() {
             id="resources-heading"
             className="text-xs font-medium uppercase tracking-wider text-muted-foreground"
           >
-            Ressources liées
+            Pour aller plus loin
           </h3>
           <div className="grid gap-3 sm:grid-cols-3">
             {RESOURCES.map((r) => (
