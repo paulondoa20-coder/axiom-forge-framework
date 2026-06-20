@@ -88,6 +88,23 @@ const LIVE_ITEMS = [
   { icon: <Flame className="h-3 w-3" />, text: "Cuisine de mamie Jeanne — complet dimanche" },
 ];
 
+const CATEGORIES = [
+  { label: "Artisanat", count: 42, icon: Palette },
+  { label: "Musique", count: 28, icon: Sparkles },
+  { label: "Cuisine", count: 31, icon: Heart },
+  { label: "Langues", count: 19, icon: BookOpen },
+  { label: "Bien-être", count: 24, icon: ShieldCheck },
+  { label: "Nature & jardin", count: 17, icon: Compass },
+  { label: "Sports doux", count: 14, icon: Users },
+  { label: "Récits & mémoire", count: 9, icon: BookOpen },
+];
+
+const FEATURED = [
+  { name: "Atelier poterie raku", by: "Claire M.", city: "Lyon", tag: "Artisanat", rating: 4.9, when: "Sam. 14h" },
+  { name: "Cours de kora & griotique", by: "Sékou D.", city: "Marseille", tag: "Musique", rating: 4.8, when: "Mer. 18h" },
+  { name: "Cuisine de mamie Jeanne", by: "Jeanne R.", city: "Aix", tag: "Cuisine", rating: 5.0, when: "Dim. 11h" },
+];
+
 const TESTIMONIALS = [
   {
     quote: "Franchement, j'ai retrouvé le kiff de transmettre ce que ma mère m'a appris.",
