@@ -3,6 +3,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { HubHeader } from "@/components/hub/HubHeader";
 import { SmartCard } from "@/components/ui-kit/SmartCard";
 import { PageBreadcrumb } from "@/components/ui-kit/PageBreadcrumb";
+import { LivePulse } from "@/components/ui-kit/LivePulse";
 import { Button } from "@/components/ui/button";
 import {
   GraduationCap,
@@ -19,6 +20,8 @@ import {
   MessageCircle,
   ShieldCheck,
   Palette,
+  Flame,
+  Zap,
 } from "lucide-react";
 
 export const Route = createFileRoute("/talents")({
@@ -57,71 +60,41 @@ const PILLARS = [
   {
     icon: GraduationCap,
     title: "Apprendre",
-    desc: "Cours, ateliers et mentorat avec des personnes passionnées de votre territoire.",
+    desc: "Va choper un savoir-faire chez quelqu'un du coin. Pas de fioritures, du vrai.",
     cta: "Trouver un atelier",
     to: "#categories",
   },
   {
     icon: Heart,
     title: "Transmettre",
-    desc: "Partagez un savoir-faire, une langue, un geste — laissez une trace vivante.",
+    desc: "T'as un truc dans les mains ou dans la tête ? Passe-le. Le quartier en a besoin.",
     cta: "Proposer un savoir",
     to: "#partager",
   },
   {
     icon: Users,
     title: "Se rencontrer",
-    desc: "Rejoignez une communauté locale autour d'un talent ou d'une passion.",
+    desc: "Une passion, un cercle, des gens vrais. Rejoins la tribu près de chez toi.",
     cta: "Voir les cercles",
     to: "/radar",
   },
 ] as const;
 
-const CATEGORIES = [
-  { label: "Artisanat", count: 42, icon: Palette },
-  { label: "Musique", count: 28, icon: Sparkles },
-  { label: "Cuisine", count: 31, icon: Heart },
-  { label: "Langues", count: 19, icon: BookOpen },
-  { label: "Bien-être", count: 24, icon: ShieldCheck },
-  { label: "Nature & jardin", count: 17, icon: Compass },
-  { label: "Sports doux", count: 14, icon: Users },
-  { label: "Récits & mémoire", count: 9, icon: BookOpen },
-];
-
-const FEATURED = [
-  {
-    name: "Atelier poterie raku",
-    by: "Claire M.",
-    city: "Lyon",
-    tag: "Artisanat",
-    rating: 4.9,
-    when: "Sam. 14h",
-  },
-  {
-    name: "Cours de kora & griotique",
-    by: "Sékou D.",
-    city: "Marseille",
-    tag: "Musique",
-    rating: 4.8,
-    when: "Mer. 18h",
-  },
-  {
-    name: "Cuisine de grand-mère provençale",
-    by: "Jeanne R.",
-    city: "Aix",
-    tag: "Cuisine",
-    rating: 5.0,
-    when: "Dim. 11h",
-  },
+const LIVE_ITEMS = [
+  { icon: <Flame className="h-3 w-3" />, text: "Awa vient d'ouvrir un atelier couture à Toulouse" },
+  { icon: <Zap className="h-3 w-3" />, text: "3 places libres ce soir — kora & griotique" },
+  { icon: <Sparkles className="h-3 w-3" />, text: "Sékou cherche un apprenti djembé" },
+  { icon: <Heart className="h-3 w-3" />, text: "12 nouveaux talents cette semaine" },
+  { icon: <Flame className="h-3 w-3" />, text: "Cuisine de mamie Jeanne — complet dimanche" },
 ];
 
 const TESTIMONIALS = [
   {
-    quote: "J'ai retrouvé le plaisir de transmettre ce que ma mère m'a appris.",
+    quote: "Franchement, j'ai retrouvé le kiff de transmettre ce que ma mère m'a appris.",
     author: "Awa, 62 ans — Toulouse",
   },
   {
-    quote: "Trois ateliers, trois rencontres précieuses. Tout près de chez moi.",
+    quote: "Trois ateliers, trois belles rencontres. Et tout ça à 10 min de chez moi.",
     author: "Hugo, 29 ans — Nantes",
   },
 ];
@@ -129,15 +102,17 @@ const TESTIMONIALS = [
 function TalentsPage() {
   return (
     <AppShell>
-      <div className="mx-auto w-full max-w-3xl space-y-8">
+      <div className="mx-auto w-full max-w-3xl space-y-8 motion-safe:animate-fade-in">
         <PageBreadcrumb />
         <HubHeader
           eyebrow="Espace"
           title="Talents & Savoir Vivant"
-          description="Un lieu pour transmettre, apprendre et célébrer les savoirs qui font vivre nos communautés."
+          description="Le quartier a du talent. Viens l'apprendre, le transmettre, le célébrer."
           color={ACCENT}
           icon={<GraduationCap className="h-5 w-5" />}
         />
+
+        <LivePulse items={LIVE_ITEMS} accent={ACCENT} label="Ça bouge" />
 
         {/* HERO */}
         <SmartCard className="space-y-5">
@@ -154,12 +129,12 @@ function TalentsPage() {
             </div>
             <div className="flex-1 space-y-1">
               <h2 className="text-base font-semibold leading-snug">
-                Donnez de la valeur à ce que vous savez faire.
+                Ce que tu sais faire, ça vaut de l'or.
               </h2>
               <p className="text-xs leading-relaxed text-muted-foreground">
-                VITALA met en lumière les talents discrets : artisans, mentors,
-                porteurs de mémoire, voisins inspirants. Trouvez les vôtres,
-                proposez les vôtres — gratuitement et localement.
+                VITALA, c'est le mégaphone des talents discrets : artisans,
+                mentors, anciens, voisins qui assurent. Trouve les tiens,
+                propose les tiens — gratos et près de chez toi.
               </p>
             </div>
           </div>
@@ -193,7 +168,7 @@ function TalentsPage() {
             id="pillars-heading"
             className="text-xs font-medium uppercase tracking-wider text-muted-foreground"
           >
-            Trois manières de vivre cet espace
+            3 façons d'y prendre part
           </h3>
           <div className="grid gap-3 sm:grid-cols-3">
             {PILLARS.map((p) => {
@@ -253,7 +228,7 @@ function TalentsPage() {
               id="categories-heading"
               className="text-xs font-medium uppercase tracking-wider text-muted-foreground"
             >
-              Catégories vivantes
+              Ça se passe par catégorie
             </h3>
             <span className="text-[11px] text-muted-foreground">
               {CATEGORIES.reduce((a, c) => a + c.count, 0)} talents recensés
@@ -289,7 +264,7 @@ function TalentsPage() {
               id="featured-heading"
               className="text-xs font-medium uppercase tracking-wider text-muted-foreground"
             >
-              À découvrir près de chez vous
+              Frais sortis du quartier
             </h3>
             <Link
               to="/radar"
@@ -388,12 +363,12 @@ function TalentsPage() {
               </div>
               <div className="flex-1 space-y-1">
                 <h3 id="share-heading" className="text-base font-semibold">
-                  Vous avez un savoir à transmettre ?
+                  T'as un truc à transmettre ? Lance-toi.
                 </h3>
                 <p className="text-xs leading-relaxed text-muted-foreground">
-                  En 3 minutes, créez votre fiche talent : un titre, une
-                  description, vos disponibilités. Notre équipe vous accompagne
-                  pour vos premières rencontres.
+                  3 minutes chrono : un titre, deux lignes, tes dispos. On
+                  s'occupe du reste et on t'accompagne pour tes premières
+                  rencontres. Promis, ça fait pas mal.
                 </p>
               </div>
             </div>
@@ -403,7 +378,7 @@ function TalentsPage() {
                 className="w-full rounded-xl"
                 style={{ background: ACCENT, color: "var(--background)" }}
               >
-                Créer ma fiche talent
+                Je crée ma fiche talent
               </Button>
               <Button
                 asChild
@@ -425,7 +400,7 @@ function TalentsPage() {
             id="voices-heading"
             className="text-xs font-medium uppercase tracking-wider text-muted-foreground"
           >
-            Ils témoignent
+            Ils en parlent mieux que nous
           </h3>
           <div className="grid gap-3 sm:grid-cols-2">
             {TESTIMONIALS.map((t) => (
