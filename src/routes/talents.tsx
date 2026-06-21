@@ -4,6 +4,7 @@ import { HubHeader } from "@/components/hub/HubHeader";
 import { SmartCard } from "@/components/ui-kit/SmartCard";
 import { PageBreadcrumb } from "@/components/ui-kit/PageBreadcrumb";
 import { LivePulse } from "@/components/ui-kit/LivePulse";
+import { DetailDialog } from "@/components/ui-kit/DetailDialog";
 import { Button } from "@/components/ui/button";
 import {
   GraduationCap,
@@ -31,13 +32,13 @@ export const Route = createFileRoute("/talents")({
       {
         name: "description",
         content:
-          "Découvrez, apprenez et transmettez des talents et savoir-faire vivants près de chez vous. Ateliers, mentorat, traditions et rencontres locales.",
+          "Apprends, transmets, célèbre les savoir-faire du quartier. Ateliers, mentors et rencontres près de chez toi.",
       },
       { property: "og:title", content: "Talents & Savoir Vivant — VITALA" },
       {
         property: "og:description",
         content:
-          "Un espace humain pour transmettre, apprendre et valoriser les savoirs vivants de votre territoire.",
+          "Le quartier a du talent. Viens l'apprendre, le transmettre, le célébrer.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "/talents" },
@@ -46,7 +47,7 @@ export const Route = createFileRoute("/talents")({
       {
         name: "twitter:description",
         content:
-          "Apprendre, transmettre, rencontrer : la carte vivante des talents près de chez vous.",
+          "Apprendre, transmettre, rencontrer : la carte vivante des talents près de chez toi.",
       },
     ],
     links: [{ rel: "canonical", href: "/talents" }],
@@ -62,21 +63,42 @@ const PILLARS = [
     title: "Apprendre",
     desc: "Va choper un savoir-faire chez quelqu'un du coin. Pas de fioritures, du vrai.",
     cta: "Trouver un atelier",
-    to: "#categories",
+    summary:
+      "Trouve un mentor ou un atelier près de chez toi et apprends en vrai, dans les mains.",
+    steps: [
+      "Choisis une catégorie qui te parle (musique, cuisine, artisanat…).",
+      "Réserve une session gratuite ou solidaire avec un talent local.",
+      "Repars avec un savoir-faire et une nouvelle connexion humaine.",
+    ],
+    cta2: "Voir les catégories",
   },
   {
     icon: Heart,
     title: "Transmettre",
     desc: "T'as un truc dans les mains ou dans la tête ? Passe-le. Le quartier en a besoin.",
     cta: "Proposer un savoir",
-    to: "#partager",
+    summary:
+      "Toi aussi t'as un geste, une recette, une histoire à passer. On t'aide à monter ta fiche en 3 minutes.",
+    steps: [
+      "Décris ton savoir en deux lignes — même brouillon.",
+      "Indique tes dispos et ton lieu (chez toi, en plein air, peu importe).",
+      "On te connecte avec les premiers curieux du quartier.",
+    ],
+    cta2: "Créer ma fiche",
   },
   {
     icon: Users,
     title: "Se rencontrer",
     desc: "Une passion, un cercle, des gens vrais. Rejoins la tribu près de chez toi.",
     cta: "Voir les cercles",
-    to: "/radar",
+    summary:
+      "Les cercles, c'est des petits groupes qui se retrouvent pour pratiquer, débattre, créer.",
+    steps: [
+      "Ouvre le radar local pour voir les cercles actifs autour de toi.",
+      "Rejoins-en un en un clic, sans engagement.",
+      "Croise du monde, recommence, recommence encore.",
+    ],
+    cta2: "Ouvrir le radar",
   },
 ] as const;
 
@@ -89,20 +111,68 @@ const LIVE_ITEMS = [
 ];
 
 const CATEGORIES = [
-  { label: "Artisanat", count: 42, icon: Palette },
-  { label: "Musique", count: 28, icon: Sparkles },
-  { label: "Cuisine", count: 31, icon: Heart },
-  { label: "Langues", count: 19, icon: BookOpen },
-  { label: "Bien-être", count: 24, icon: ShieldCheck },
-  { label: "Nature & jardin", count: 17, icon: Compass },
-  { label: "Sports doux", count: 14, icon: Users },
-  { label: "Récits & mémoire", count: 9, icon: BookOpen },
+  { label: "Artisanat", count: 42, icon: Palette, hint: "Bois, cuir, poterie, couture — tout ce qui se fait avec les mains." },
+  { label: "Musique", count: 28, icon: Sparkles, hint: "Instruments, chant, prod, traditions vivantes." },
+  { label: "Cuisine", count: 31, icon: Heart, hint: "Recettes du bled, street food, pâtisseries de famille." },
+  { label: "Langues", count: 19, icon: BookOpen, hint: "Wolof, créole, arabe, anglais — apprends à la cool." },
+  { label: "Bien-être", count: 24, icon: ShieldCheck, hint: "Yoga, massages, plantes, soins traditionnels." },
+  { label: "Nature & jardin", count: 17, icon: Compass, hint: "Permaculture, balcons vivants, cueillette urbaine." },
+  { label: "Sports doux", count: 14, icon: Users, hint: "Marche, danse, qi gong, mouvement libre." },
+  { label: "Récits & mémoire", count: 9, icon: BookOpen, hint: "Contes, histoires de famille, mémoire du quartier." },
 ];
 
 const FEATURED = [
-  { name: "Atelier poterie raku", by: "Claire M.", city: "Lyon", tag: "Artisanat", rating: 4.9, when: "Sam. 14h" },
-  { name: "Cours de kora & griotique", by: "Sékou D.", city: "Marseille", tag: "Musique", rating: 4.8, when: "Mer. 18h" },
-  { name: "Cuisine de mamie Jeanne", by: "Jeanne R.", city: "Aix", tag: "Cuisine", rating: 5.0, when: "Dim. 11h" },
+  {
+    name: "Atelier poterie raku",
+    by: "Claire M.",
+    city: "Lyon",
+    tag: "Artisanat",
+    rating: 4.9,
+    when: "Sam. 14h",
+    duration: "2h",
+    price: "Libre — 15€ suggéré",
+    summary:
+      "Une après-midi les mains dans la terre avec Claire, céramiste depuis 12 ans. Tu repars avec ta pièce, cuite à la mode raku.",
+    steps: [
+      "Accueil thé & présentation des pièces.",
+      "Tournage / modelage guidé selon ton niveau.",
+      "Cuisson raku en direct — magie garantie.",
+    ],
+  },
+  {
+    name: "Cours de kora & griotique",
+    by: "Sékou D.",
+    city: "Marseille",
+    tag: "Musique",
+    rating: 4.8,
+    when: "Mer. 18h",
+    duration: "1h30",
+    price: "Solidaire",
+    summary:
+      "Sékou partage la kora et l'art du griot : un instrument, mille histoires. Aucun niveau requis, juste l'envie d'écouter.",
+    steps: [
+      "Démo et histoire de l'instrument.",
+      "Premières notes, posture, respiration.",
+      "On joue ensemble un motif traditionnel.",
+    ],
+  },
+  {
+    name: "Cuisine de mamie Jeanne",
+    by: "Jeanne R.",
+    city: "Aix",
+    tag: "Cuisine",
+    rating: 5.0,
+    when: "Dim. 11h",
+    duration: "3h + repas",
+    price: "12€ (ingrédients)",
+    summary:
+      "Jeanne, 78 ans, ouvre sa cuisine pour transmettre ses recettes provençales. On cuisine, on mange, on raconte.",
+    steps: [
+      "Marché ensemble au coin de la rue (optionnel).",
+      "Préparation à 4 mains des plats du jour.",
+      "On passe à table — c'est là que tout se dit.",
+    ],
+  },
 ];
 
 const TESTIMONIALS = [
@@ -188,49 +258,50 @@ function TalentsPage() {
             3 façons d'y prendre part
           </h3>
           <div className="grid gap-3 sm:grid-cols-3">
-            {PILLARS.map((p) => {
-              const isInternal = p.to.startsWith("/");
-              const inner = (
-                <SmartCard className="flex h-full flex-col gap-3 transition-all hover:-translate-y-0.5">
-                  <div
-                    className="flex h-10 w-10 items-center justify-center rounded-xl"
-                    style={{
-                      background: `color-mix(in oklch, ${ACCENT} 15%, transparent)`,
-                      color: ACCENT,
-                    }}
-                    aria-hidden
+            {PILLARS.map((p) => (
+              <DetailDialog
+                key={p.title}
+                accent={ACCENT}
+                eyebrow="Mode d'emploi"
+                title={p.title}
+                summary={p.summary}
+                steps={[...p.steps]}
+                primaryCta={{ label: p.cta2 }}
+                secondaryCta={{ label: "Plus tard" }}
+                trigger={
+                  <button
+                    type="button"
+                    className="block w-full text-left rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                    style={{ outlineColor: ACCENT }}
                   >
-                    <p.icon className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-semibold">{p.title}</p>
-                    <p className="text-xs leading-relaxed text-muted-foreground">
-                      {p.desc}
-                    </p>
-                  </div>
-                  <span
-                    className="inline-flex items-center gap-1 text-xs font-medium"
-                    style={{ color: ACCENT }}
-                  >
-                    {p.cta} <ArrowUpRight className="h-3 w-3" />
-                  </span>
-                </SmartCard>
-              );
-              return isInternal ? (
-                <Link
-                  key={p.title}
-                  to={p.to}
-                  className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded-2xl"
-                  style={{ outlineColor: ACCENT }}
-                >
-                  {inner}
-                </Link>
-              ) : (
-                <a key={p.title} href={p.to} className="block rounded-2xl">
-                  {inner}
-                </a>
-              );
-            })}
+                    <SmartCard className="flex h-full flex-col gap-3 transition-all hover:-translate-y-0.5">
+                      <div
+                        className="flex h-10 w-10 items-center justify-center rounded-xl"
+                        style={{
+                          background: `color-mix(in oklch, ${ACCENT} 15%, transparent)`,
+                          color: ACCENT,
+                        }}
+                        aria-hidden
+                      >
+                        <p.icon className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <p className="text-sm font-semibold">{p.title}</p>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                          {p.desc}
+                        </p>
+                      </div>
+                      <span
+                        className="inline-flex items-center gap-1 text-xs font-medium"
+                        style={{ color: ACCENT }}
+                      >
+                        {p.cta} <ArrowUpRight className="h-3 w-3" />
+                      </span>
+                    </SmartCard>
+                  </button>
+                }
+              />
+            ))}
           </div>
         </section>
 
@@ -253,23 +324,44 @@ function TalentsPage() {
           </div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {CATEGORIES.map((c) => (
-              <button
+              <DetailDialog
                 key={c.label}
-                type="button"
-                className="glass-surface group flex flex-col items-start gap-1.5 rounded-2xl p-3 text-left transition-all hover:-translate-y-0.5"
-              >
-                <c.icon
-                  className="h-4 w-4"
-                  style={{ color: ACCENT }}
-                  aria-hidden
-                />
-                <span className="text-sm font-medium leading-tight">
-                  {c.label}
-                </span>
-                <span className="text-[11px] text-muted-foreground">
-                  {c.count} talents
-                </span>
-              </button>
+                accent={ACCENT}
+                eyebrow="Catégorie"
+                title={c.label}
+                summary={c.hint}
+                meta={[
+                  { label: "Talents actifs", value: `${c.count}` },
+                  { label: "Format", value: "Atelier · 1-3h" },
+                  { label: "Tarif", value: "Libre / solidaire" },
+                  { label: "Près de chez toi", value: "Activé" },
+                ]}
+                steps={[
+                  "Explore les talents de cette catégorie autour de toi.",
+                  "Discute en DM avec celui ou celle qui te parle.",
+                  "Réserve ta première session — ça démarre comme ça.",
+                ]}
+                primaryCta={{ label: `Voir les ${c.label.toLowerCase()}` }}
+                secondaryCta={{ label: "Fermer" }}
+                trigger={
+                  <button
+                    type="button"
+                    className="glass-surface group flex w-full flex-col items-start gap-1.5 rounded-2xl p-3 text-left transition-all hover:-translate-y-0.5"
+                  >
+                    <c.icon
+                      className="h-4 w-4"
+                      style={{ color: ACCENT }}
+                      aria-hidden
+                    />
+                    <span className="text-sm font-medium leading-tight">
+                      {c.label}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground">
+                      {c.count} talents
+                    </span>
+                  </button>
+                }
+              />
             ))}
           </div>
         </section>
@@ -337,13 +429,32 @@ function TalentsPage() {
                   </span>
                 </div>
                 <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    className="flex-1 rounded-xl"
-                    style={{ background: ACCENT, color: "var(--background)" }}
-                  >
-                    Réserver
-                  </Button>
+                  <DetailDialog
+                    accent={ACCENT}
+                    eyebrow={f.tag}
+                    title={f.name}
+                    summary={f.summary}
+                    meta={[
+                      { label: "Hôte", value: f.by },
+                      { label: "Ville", value: f.city },
+                      { label: "Quand", value: f.when },
+                      { label: "Durée", value: f.duration },
+                      { label: "Tarif", value: f.price },
+                      { label: "Note", value: `${f.rating.toFixed(1)} ★` },
+                    ]}
+                    steps={f.steps}
+                    primaryCta={{ label: "Réserver ma place" }}
+                    secondaryCta={{ label: "Envoyer un message" }}
+                    trigger={
+                      <Button
+                        size="sm"
+                        className="flex-1 rounded-xl"
+                        style={{ background: ACCENT, color: "var(--background)" }}
+                      >
+                        Voir & réserver
+                      </Button>
+                    }
+                  />
                   <Button
                     asChild
                     size="sm"
@@ -390,13 +501,34 @@ function TalentsPage() {
               </div>
             </div>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <Button
-                size="sm"
-                className="w-full rounded-xl"
-                style={{ background: ACCENT, color: "var(--background)" }}
-              >
-                Je crée ma fiche talent
-              </Button>
+              <DetailDialog
+                accent={ACCENT}
+                eyebrow="Créer ma fiche"
+                title="Je crée ma fiche talent"
+                summary="On t'aide à présenter ton savoir-faire en une fiche claire, humaine et trouvable par les voisins."
+                steps={[
+                  "Titre + 2 lignes pour dire ce que tu transmets.",
+                  "Tes dispos (jours/heures) et ton coin.",
+                  "Une photo, un prix libre — et c'est en ligne.",
+                ]}
+                meta={[
+                  { label: "Temps", value: "≈ 3 minutes" },
+                  { label: "Coût", value: "Gratuit" },
+                  { label: "Modération", value: "Humaine" },
+                  { label: "Visibilité", value: "Quartier d'abord" },
+                ]}
+                primaryCta={{ label: "Démarrer ma fiche" }}
+                secondaryCta={{ label: "Plus tard" }}
+                trigger={
+                  <Button
+                    size="sm"
+                    className="w-full rounded-xl"
+                    style={{ background: ACCENT, color: "var(--background)" }}
+                  >
+                    Je crée ma fiche talent
+                  </Button>
+                }
+              />
               <Button
                 asChild
                 size="sm"
