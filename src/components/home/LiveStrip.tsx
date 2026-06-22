@@ -1,15 +1,18 @@
+import { Link } from "@tanstack/react-router";
 import { LiveDot } from "@/components/ui-kit/TrustBadge";
 import { AlertCircle, Sparkles, ShieldCheck } from "lucide-react";
 
 const items = [
   {
+    to: "/radar",
     label: "besoins urgents",
     value: 12,
-    where: "dans votre zone",
+    where: "dans ta zone",
     color: "var(--radar)",
     icon: AlertCircle,
   },
   {
+    to: "/flash",
     label: "offres proches",
     value: 5,
     where: "à moins de 2 km",
@@ -17,28 +20,30 @@ const items = [
     icon: Sparkles,
   },
   {
+    to: "/trust",
     label: "services vérifiés",
     value: 3,
-    where: "disponibles maintenant",
+    where: "dispo maintenant",
     color: "var(--trust)",
     icon: ShieldCheck,
   },
-];
+] as const;
 
 export function LiveStrip() {
   return (
     <section className="space-y-2">
       <div className="flex items-center justify-between px-1">
-        <h2 className="text-sm font-medium text-muted-foreground">En direct autour de vous</h2>
+        <h2 className="text-sm font-medium text-muted-foreground">En direct autour de toi</h2>
         <LiveDot />
       </div>
       <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {items.map((it, i) => {
           const Icon = it.icon;
           return (
-            <div
+            <Link
               key={i}
-              className="glass-surface flex min-w-[200px] shrink-0 items-center gap-3 rounded-xl p-3"
+              to={it.to}
+              className="glass-surface flex min-w-[210px] shrink-0 items-center gap-3 rounded-xl p-3 transition-all hover:-translate-y-0.5 active:scale-[0.99]"
             >
               <div
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
@@ -57,7 +62,7 @@ export function LiveStrip() {
                 </p>
                 <p className="text-[11px] text-muted-foreground">{it.where}</p>
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>
