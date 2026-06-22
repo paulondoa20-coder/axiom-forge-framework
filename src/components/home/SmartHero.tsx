@@ -1,22 +1,37 @@
-import { Search, Sparkles, ArrowRight } from "lucide-react";
+import { Sparkles, ArrowRight, MapPin, Activity } from "lucide-react";
 
 export function SmartHero({ name = "Alex" }: { name?: string }) {
   const hour = new Date().getHours();
   const greet =
-    hour < 6 ? "Late night" : hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+    hour < 6 ? "Encore debout" : hour < 12 ? "Bonjour" : hour < 18 ? "Bel après-midi" : "Bonsoir";
+
+  const punch =
+    hour < 12
+      ? "On démarre fort ?"
+      : hour < 18
+      ? "C'est le moment de bouger."
+      : "La ville s'active — t'es prêt ?";
 
   return (
-    <header className="space-y-5">
-
-
+    <header className="space-y-4">
       {/* Greeting */}
-      <div className="space-y-1">
-        <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-          {greet}, {name}
-        </p>
+      <div className="space-y-1.5">
+        <div className="flex items-center gap-2">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inset-0 animate-ping rounded-full bg-[var(--radar)] opacity-75" />
+            <span className="relative h-1.5 w-1.5 rounded-full bg-[var(--radar)]" />
+          </span>
+          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            {greet}, {name} · <span className="text-foreground/70">{punch}</span>
+          </p>
+        </div>
         <h1 className="text-[26px] font-semibold leading-tight tracking-tight text-gradient-primary">
           Que souhaitez-vous faire&nbsp;aujourd'hui&nbsp;?
         </h1>
+        <p className="text-[12px] leading-relaxed text-muted-foreground">
+          Une demande, une offre, une découverte — VITALA te connecte au bon profil, au bon
+          moment.
+        </p>
       </div>
 
       {/* Smart action bar — single central entry point */}
@@ -49,12 +64,26 @@ export function SmartHero({ name = "Alex" }: { name?: string }) {
               Publier, chercher un service, ou exprimer un besoin…
             </p>
             <p className="mt-0.5 text-[11px] text-muted-foreground">
-              Une seule action — VITALA vous oriente
+              Une seule action — VITALA t'oriente
             </p>
           </div>
           <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
         </div>
       </button>
+
+      {/* Micro pulse row — context immédiat */}
+      <div className="flex items-center gap-2 px-1 text-[11px] text-muted-foreground">
+        <span className="inline-flex items-center gap-1">
+          <MapPin className="h-3 w-3" style={{ color: "var(--scan)" }} />
+          Akwa, Douala
+        </span>
+        <span className="opacity-40">·</span>
+        <span className="inline-flex items-center gap-1">
+          <Activity className="h-3 w-3" style={{ color: "var(--flash)" }} />
+          <span className="text-foreground/80">128</span> personnes actives autour
+        </span>
+      </div>
     </header>
   );
 }
+
