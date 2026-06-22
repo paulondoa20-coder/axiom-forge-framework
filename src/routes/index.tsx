@@ -12,6 +12,9 @@ import { HowItWorks } from "@/components/home/HowItWorks";
 import { CommunityPulse } from "@/components/home/CommunityPulse";
 import { FinalCTA } from "@/components/home/FinalCTA";
 import { LivePulse } from "@/components/ui-kit/LivePulse";
+import { FeaturesShowcase } from "@/components/home/FeaturesShowcase";
+import { UseCases } from "@/components/home/UseCases";
+import { QuickFAQ } from "@/components/home/QuickFAQ";
 
 const HOME_LIVE = [
   { icon: <Zap className="h-3 w-3" />, text: "Marc vient de publier un flash livraison" },
@@ -48,10 +51,13 @@ function Index() {
         <LivePulse items={HOME_LIVE} label="Ça bouge" accent="var(--radar)" />
         <HubGrid />
         <HowItWorks />
+        <FeaturesShowcase />
         <LiveStrip />
         <Opportunities />
+        <UseCases />
         <SmartSuggestions />
         <CommunityPulse />
+        <QuickFAQ />
         <TrustHint />
         <RecentActivity />
         <FinalCTA />
