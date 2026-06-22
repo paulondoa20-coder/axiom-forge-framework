@@ -1,5 +1,4 @@
-import { Sparkles, Compass, HandshakeIcon } from "lucide-react";
-import { Handshake } from "lucide-react";
+import { Sparkles, Compass, Handshake } from "lucide-react";
 
 const steps = [
   {
