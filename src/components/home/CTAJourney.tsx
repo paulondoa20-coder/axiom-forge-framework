@@ -64,11 +64,21 @@ export function CTAJourney() {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {steps.map((s, i) => {
           const Icon = s.icon;
+          const Hint = s.hintIcon;
           return (
             <Link
               key={s.n}
               to={s.to}
-              className="glass-surface group relative flex flex-col gap-3 overflow-hidden rounded-2xl p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_-12px_var(--shadow-color,oklch(0_0_0/0.5))] active:scale-[0.98]"
+              onClick={() =>
+                track("cta_journey_click", {
+                  step: s.n,
+                  label: s.label,
+                  target: s.to,
+                  position: i + 1,
+                })
+              }
+              aria-label={`${s.label} — ${s.cta}`}
+              className="glass-surface lift-on-hover group relative flex flex-col gap-3 overflow-hidden rounded-2xl p-4 active:scale-[0.98]"
               style={{ ["--shadow-color" as never]: s.color }}
             >
               <span
@@ -84,7 +94,7 @@ export function CTAJourney() {
 
               <div className="relative flex items-center justify-between">
                 <div
-                  className="flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
+                  className="flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 motion-reduce:transition-none motion-reduce:group-hover:scale-100 motion-reduce:group-hover:rotate-0"
                   style={{
                     background: `color-mix(in oklch, ${s.color} 18%, transparent)`,
                     color: s.color,
@@ -108,12 +118,23 @@ export function CTAJourney() {
                 <p className="text-[12px] leading-relaxed text-muted-foreground">{s.desc}</p>
               </div>
 
-              <div
-                className="relative inline-flex items-center gap-1.5 text-[12px] font-semibold transition-transform duration-300 group-hover:translate-x-0.5"
-                style={{ color: s.color }}
-              >
-                {s.cta}
-                <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1" />
+              <div className="relative flex items-center justify-between gap-2">
+                <span
+                  className="inline-flex items-center gap-1.5 text-[12px] font-semibold transition-transform duration-300 group-hover:translate-x-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0"
+                  style={{ color: s.color }}
+                >
+                  {s.cta}
+                  <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0" />
+                </span>
+                <span
+                  className="inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
+                  style={{
+                    background: `color-mix(in oklch, ${s.color} 10%, transparent)`,
+                  }}
+                >
+                  <Hint className="h-2.5 w-2.5" />
+                  {s.hint}
+                </span>
               </div>
             </Link>
           );
