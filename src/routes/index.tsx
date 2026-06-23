@@ -15,6 +15,8 @@ import { LivePulse } from "@/components/ui-kit/LivePulse";
 import { FeaturesShowcase } from "@/components/home/FeaturesShowcase";
 import { UseCases } from "@/components/home/UseCases";
 import { QuickFAQ } from "@/components/home/QuickFAQ";
+import { CTAJourney } from "@/components/home/CTAJourney";
+import { Reveal } from "@/components/home/Reveal";
 
 const HOME_LIVE = [
   { icon: <Zap className="h-3 w-3" />, text: "Marc vient de publier un flash livraison" },
@@ -49,18 +51,19 @@ function Index() {
       <div className="space-y-7 animate-[fade-up_0.5s_var(--ease-smooth)_both]">
         <SmartHero />
         <LivePulse items={HOME_LIVE} label="Ça bouge" accent="var(--radar)" />
-        <HubGrid />
-        <HowItWorks />
-        <FeaturesShowcase />
-        <LiveStrip />
-        <Opportunities />
-        <UseCases />
-        <SmartSuggestions />
-        <CommunityPulse />
-        <QuickFAQ />
-        <TrustHint />
-        <RecentActivity />
-        <FinalCTA />
+        <Reveal><HubGrid /></Reveal>
+        <Reveal delay={60}><CTAJourney /></Reveal>
+        <Reveal><HowItWorks /></Reveal>
+        <Reveal><FeaturesShowcase /></Reveal>
+        <Reveal><LiveStrip /></Reveal>
+        <Reveal><Opportunities /></Reveal>
+        <Reveal><UseCases /></Reveal>
+        <Reveal><SmartSuggestions /></Reveal>
+        <Reveal><CommunityPulse /></Reveal>
+        <Reveal><QuickFAQ /></Reveal>
+        <Reveal><TrustHint /></Reveal>
+        <Reveal><RecentActivity /></Reveal>
+        <Reveal><FinalCTA /></Reveal>
       </div>
     </AppShell>
   );
