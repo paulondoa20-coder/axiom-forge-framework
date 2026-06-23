@@ -17,6 +17,9 @@ import { UseCases } from "@/components/home/UseCases";
 import { QuickFAQ } from "@/components/home/QuickFAQ";
 import { CTAJourney } from "@/components/home/CTAJourney";
 import { Reveal } from "@/components/home/Reveal";
+import { Testimonials } from "@/components/home/Testimonials";
+import { track, useScrollDepth, useSectionTime } from "@/lib/analytics";
+import { useEffect } from "react";
 
 const HOME_LIVE = [
   { icon: <Zap className="h-3 w-3" />, text: "Marc vient de publier un flash livraison" },
@@ -46,21 +49,43 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  useScrollDepth("home");
+  useEffect(() => {
+    track("page_view", { page: "home" });
+  }, []);
+
+  const heroRef = useSectionTime("hero");
+  const journeyRef = useSectionTime("cta_journey");
+  const featuresRef = useSectionTime("features");
+  const testimonialsRef = useSectionTime("testimonials");
+  const faqRef = useSectionTime("faq");
+
   return (
     <AppShell>
-      <div className="space-y-7 animate-[fade-up_0.5s_var(--ease-smooth)_both]">
-        <SmartHero />
+      <div className="space-y-7 animate-[fade-up_0.5s_var(--ease-smooth)_both] motion-reduce:animate-none">
+        <section ref={heroRef as never}>
+          <SmartHero />
+        </section>
         <LivePulse items={HOME_LIVE} label="Ça bouge" accent="var(--radar)" />
         <Reveal><HubGrid /></Reveal>
-        <Reveal delay={60}><CTAJourney /></Reveal>
+        <section ref={journeyRef as never}>
+          <Reveal delay={60}><CTAJourney /></Reveal>
+        </section>
         <Reveal><HowItWorks /></Reveal>
-        <Reveal><FeaturesShowcase /></Reveal>
+        <section ref={featuresRef as never}>
+          <Reveal><FeaturesShowcase /></Reveal>
+        </section>
         <Reveal><LiveStrip /></Reveal>
         <Reveal><Opportunities /></Reveal>
         <Reveal><UseCases /></Reveal>
         <Reveal><SmartSuggestions /></Reveal>
         <Reveal><CommunityPulse /></Reveal>
-        <Reveal><QuickFAQ /></Reveal>
+        <section ref={testimonialsRef as never}>
+          <Reveal><Testimonials /></Reveal>
+        </section>
+        <section ref={faqRef as never}>
+          <Reveal><QuickFAQ /></Reveal>
+        </section>
         <Reveal><TrustHint /></Reveal>
         <Reveal><RecentActivity /></Reveal>
         <Reveal><FinalCTA /></Reveal>
