@@ -336,6 +336,15 @@
     transform: none;
     transition: none;
   }
+  /* Neutralise les animations décoratives globalement */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ─── Micro-interactions ─── */
@@ -344,9 +353,16 @@
 }
 .lift-on-hover:hover {
   transform: translateY(-2px);
+  box-shadow: 0 10px 28px -14px var(--shadow-color, oklch(0 0 0 / 0.45));
 }
 .lift-on-hover:active {
   transform: translateY(0) scale(0.99);
+}
+@media (prefers-reduced-motion: reduce) {
+  .lift-on-hover:hover,
+  .lift-on-hover:active {
+    transform: none;
+  }
 }
 
 
