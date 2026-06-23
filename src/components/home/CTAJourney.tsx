@@ -1,13 +1,16 @@
 import { Link } from "@tanstack/react-router";
-import { BookOpen, Compass, Rocket, ArrowRight } from "lucide-react";
+import { BookOpen, Compass, Rocket, ArrowRight, Clock, Sparkles, Gift } from "lucide-react";
+import { track } from "@/lib/analytics";
 
 const steps = [
   {
     n: "01",
     label: "Comprendre",
-    title: "C'est quoi VITALA ?",
-    desc: "Découvre comment ça marche en 30 secondes.",
-    cta: "Voir les fonctionnalités",
+    title: "C'est quoi VITALA, vite fait ?",
+    desc: "30 secondes pour piger le concept — sans blabla.",
+    cta: "Découvrir l'app",
+    hint: "Lecture express",
+    hintIcon: Clock,
     to: "/scan",
     icon: BookOpen,
     color: "var(--scan)",
@@ -16,9 +19,11 @@ const steps = [
   {
     n: "02",
     label: "Choisir",
-    title: "Quel hub te correspond ?",
-    desc: "Flash, Radar, Trust… on te guide vers le bon.",
-    cta: "Explorer les hubs",
+    title: "Quel hub te ressemble ?",
+    desc: "Flash, Radar, Scan ou Trust — on te pointe le bon.",
+    cta: "Tester les 4 hubs",
+    hint: "Sans inscription",
+    hintIcon: Sparkles,
     to: "/radar",
     icon: Compass,
     color: "var(--radar)",
@@ -27,9 +32,11 @@ const steps = [
   {
     n: "03",
     label: "Démarrer",
-    title: "Lance ton premier flash",
-    desc: "Une phrase, un clic — la communauté répond.",
-    cta: "Publier maintenant",
+    title: "Lance ton 1er flash gratos",
+    desc: "Une phrase, un clic — le quartier te répond.",
+    cta: "Publier mon flash",
+    hint: "100% gratuit",
+    hintIcon: Gift,
     to: "/flash",
     icon: Rocket,
     color: "var(--flash)",
