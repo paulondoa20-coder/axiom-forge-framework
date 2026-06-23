@@ -317,3 +317,36 @@
     0 0 0 4px color-mix(in oklch, var(--ring) 60%, transparent);
 }
 
+/* ─── Scroll reveal ─── */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 0.6s var(--ease-smooth),
+    transform 0.6s var(--ease-smooth);
+  will-change: opacity, transform;
+}
+.reveal.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ─── Micro-interactions ─── */
+@utility lift-on-hover {
+  transition: transform 0.25s var(--ease-smooth), box-shadow 0.25s var(--ease-smooth);
+}
+.lift-on-hover:hover {
+  transform: translateY(-2px);
+}
+.lift-on-hover:active {
+  transform: translateY(0) scale(0.99);
+}
+
+
