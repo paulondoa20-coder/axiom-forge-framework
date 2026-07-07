@@ -8,12 +8,8 @@ const features = [
     color: "var(--flash)",
     gradient: "var(--gradient-flash)",
     icon: Zap,
-    pitch: "Tu publies vite, t'es vu vite.",
-    bullets: [
-      "Annonce une mission ou un coup de main en 30 secondes",
-      "Visible immédiatement par les gens autour de toi",
-      "Idéal pour les urgences, les bons plans, les ventes du jour",
-    ],
+    pitch: "Publie vite, sois vu.",
+    bullets: ["Annonce en 30s", "Visible autour de toi", "Urgences & bons plans"],
   },
   {
     to: "/radar",
@@ -21,12 +17,8 @@ const features = [
     color: "var(--radar)",
     gradient: "var(--gradient-radar)",
     icon: Radar,
-    pitch: "Dis ton besoin, le quartier répond.",
-    bullets: [
-      "Exprime un besoin précis en une phrase",
-      "Les bons profils reçoivent l'alerte automatiquement",
-      "Première réponse en moins de 2 minutes en moyenne",
-    ],
+    pitch: "Ton besoin, leur réponse.",
+    bullets: ["Une phrase suffit", "Bons profils alertés", "Réponse en < 2 min"],
   },
   {
     to: "/scan",
@@ -34,12 +26,8 @@ const features = [
     color: "var(--scan)",
     gradient: "var(--gradient-scan)",
     icon: ScanSearch,
-    pitch: "Explore ce qui bouge autour.",
-    bullets: [
-      "Services, lieux et talents triés par proximité",
-      "Filtres simples : ouvert maintenant, vérifié, < 2 km",
-      "Carte vivante mise à jour en continu",
-    ],
+    pitch: "Vois ce qui bouge.",
+    bullets: ["Trié par proximité", "Filtres simples", "Carte en direct"],
   },
   {
     to: "/trust",
@@ -47,13 +35,10 @@ const features = [
     color: "var(--trust)",
     gradient: "var(--gradient-trust)",
     icon: ShieldCheck,
-    pitch: "Vérifie avant de t'engager.",
-    bullets: [
-      "Score de fiabilité construit par la communauté",
-      "Vérifications d'identité, de pro, de lieu",
-      "Avis transparents, pas de notes maquillées",
-    ],
+    pitch: "Vérifie avant d'y aller.",
+    bullets: ["Score de confiance", "Identité vérifiée", "Avis transparents"],
   },
+
 ] as const;
 
 export function FeaturesShowcase() {

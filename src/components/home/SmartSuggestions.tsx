@@ -2,11 +2,12 @@ import { Link } from "@tanstack/react-router";
 import { Wrench, Megaphone, Zap, MapPin, ArrowUpRight } from "lucide-react";
 
 const suggestions = [
-  { to: "/scan", label: "Trouver un électricien près de toi", icon: Wrench, color: "var(--scan)" },
-  { to: "/radar", label: "Publier une demande urgente", icon: Megaphone, color: "var(--radar)" },
-  { to: "/flash", label: "Voir les flashs dispo maintenant", icon: Zap, color: "var(--flash)" },
-  { to: "/trust", label: "Découvrir des lieux vérifiés", icon: MapPin, color: "var(--trust)" },
+  { to: "/scan", label: "Un électricien près d'ici", icon: Wrench, color: "var(--scan)" },
+  { to: "/radar", label: "Demande urgente", icon: Megaphone, color: "var(--radar)" },
+  { to: "/flash", label: "Flashs dispo", icon: Zap, color: "var(--flash)" },
+  { to: "/trust", label: "Lieux vérifiés", icon: MapPin, color: "var(--trust)" },
 ] as const;
+
 
 export function SmartSuggestions() {
   return (
