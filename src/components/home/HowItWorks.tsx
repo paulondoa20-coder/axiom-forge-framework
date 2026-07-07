@@ -5,23 +5,24 @@ const steps = [
     n: "01",
     icon: Sparkles,
     title: "Tu exprimes",
-    desc: "Un besoin, une offre, un flash — en une phrase, c'est posé.",
+    desc: "Un besoin, une phrase.",
     color: "var(--flash)",
   },
   {
     n: "02",
     icon: Compass,
     title: "VITALA oriente",
-    desc: "Le bon hub, les bons profils, au bon moment — sans te perdre.",
+    desc: "Bon hub, bon profil.",
     color: "var(--radar)",
   },
   {
     n: "03",
     icon: Handshake,
     title: "Tu connectes",
-    desc: "Profils vérifiés, échanges clairs, confiance intégrée.",
+    desc: "Profils vérifiés, en direct.",
     color: "var(--trust)",
   },
+
 ];
 
 export function HowItWorks() {

@@ -5,7 +5,7 @@ import { AlertCircle, Sparkles, ShieldCheck } from "lucide-react";
 const items = [
   {
     to: "/radar",
-    label: "besoins urgents",
+    label: "urgents",
     value: 12,
     where: "dans ta zone",
     color: "var(--radar)",
@@ -15,18 +15,19 @@ const items = [
     to: "/flash",
     label: "offres proches",
     value: 5,
-    where: "à moins de 2 km",
+    where: "< 2 km",
     color: "var(--flash)",
     icon: Sparkles,
   },
   {
     to: "/trust",
-    label: "services vérifiés",
+    label: "vérifiés",
     value: 3,
-    where: "dispo maintenant",
+    where: "dispo",
     color: "var(--trust)",
     icon: ShieldCheck,
   },
+
 ] as const;
 
 export function LiveStrip() {

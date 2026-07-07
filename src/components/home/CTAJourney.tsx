@@ -6,10 +6,10 @@ const steps = [
   {
     n: "01",
     label: "Comprendre",
-    title: "C'est quoi VITALA, vite fait ?",
-    desc: "30 secondes pour piger le concept — sans blabla.",
-    cta: "Découvrir l'app",
-    hint: "Lecture express",
+    title: "C'est quoi VITALA ?",
+    desc: "30s pour piger.",
+    cta: "Découvrir",
+    hint: "Express",
     hintIcon: Clock,
     to: "/scan",
     icon: BookOpen,
@@ -19,10 +19,10 @@ const steps = [
   {
     n: "02",
     label: "Choisir",
-    title: "Quel hub te ressemble ?",
-    desc: "Flash, Radar, Scan ou Trust — on te pointe le bon.",
-    cta: "Tester les 4 hubs",
-    hint: "Sans inscription",
+    title: "Quel hub pour toi ?",
+    desc: "Flash, Radar, Scan, Trust.",
+    cta: "Tester les hubs",
+    hint: "Sans compte",
     hintIcon: Sparkles,
     to: "/radar",
     icon: Compass,
@@ -32,11 +32,12 @@ const steps = [
   {
     n: "03",
     label: "Démarrer",
-    title: "Lance ton 1er flash gratos",
-    desc: "Une phrase, un clic — le quartier te répond.",
-    cta: "Publier mon flash",
-    hint: "100% gratuit",
+    title: "Lance ton 1er flash",
+    desc: "Une phrase, un clic.",
+    cta: "Publier",
+    hint: "Gratuit",
     hintIcon: Gift,
+
     to: "/flash",
     icon: Rocket,
     color: "var(--flash)",
@@ -53,9 +54,10 @@ export function CTAJourney() {
             Démarre en 3 temps
           </h2>
           <p className="text-[11px] text-muted-foreground">
-            Comprendre, choisir, commencer — t'es chez toi.
+            Comprends, choisis, lance.
           </p>
         </div>
+
         <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
           Parcours express
         </span>

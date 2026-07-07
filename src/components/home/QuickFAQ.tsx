@@ -8,21 +8,22 @@ import { HelpCircle } from "lucide-react";
 
 const faqs = [
   {
-    q: "C'est gratuit pour publier ?",
-    a: "Oui. Publier un Flash, lancer un Radar ou explorer le Scan, c'est zéro franc. Tu payes seulement les services que tu décides de prendre.",
+    q: "C'est gratuit ?",
+    a: "Oui. Publier, chercher, explorer — zéro franc.",
   },
   {
-    q: "Comment je sais qu'un profil est sérieux ?",
-    a: "Le score Trust te le dit en un coup d'œil : identité, vérifications, avis de la commu. Plus c'est haut, plus tu peux foncer tranquille.",
+    q: "Un profil sérieux ?",
+    a: "Le score Trust te le dit direct : identité, avis, vérifs.",
   },
   {
-    q: "Ça marche partout ?",
-    a: "On démarre fort à Douala (Akwa, Bonanjo, Bonapriso…) et on se déploie ville par ville, quartier par quartier. Plus on est, plus ça bouge.",
+    q: "Ça marche où ?",
+    a: "Douala d'abord (Akwa, Bonanjo…), puis d'autres villes.",
   },
   {
-    q: "Je peux supprimer ce que je publie ?",
-    a: "À tout moment. Tes Flashs, demandes Radar et profils — tu gardes la main. Pas de piège, pas de prise d'otage.",
+    q: "Je peux supprimer ?",
+    a: "À tout moment. Tu gardes la main.",
   },
+
 ];
 
 export function QuickFAQ() {

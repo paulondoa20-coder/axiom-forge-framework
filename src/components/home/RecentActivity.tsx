@@ -5,24 +5,25 @@ const activities = [
   {
     to: "/scan",
     icon: Eye,
-    text: "Tu as consulté 3 services près d'Akwa",
+    text: "3 services vus près d'Akwa",
     time: "il y a 2 min",
     color: "var(--scan)",
   },
   {
     to: "/messages",
     icon: MessageCircle,
-    text: "Léa a répondu à ta demande Radar",
+    text: "Léa a répondu",
     time: "il y a 14 min",
     color: "var(--radar)",
   },
   {
     to: "/trust",
     icon: CheckCircle2,
-    text: "Le profil de Tom vient d'être vérifié",
+    text: "Tom vérifié",
     time: "il y a 1 h",
     color: "var(--trust)",
   },
+
 ] as const;
 
 export function RecentActivity() {
