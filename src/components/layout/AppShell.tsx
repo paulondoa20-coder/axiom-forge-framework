@@ -1,10 +1,16 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { FloatingDock } from "./FloatingDock";
 import { TopBar } from "./TopBar";
 import { AIAssistant } from "@/components/ai/AIAssistant";
 import { Onboarding } from "@/components/onboarding/Onboarding";
+import { startAutoSync } from "@/packages/offline";
 
 export function AppShell({ children }: { children: ReactNode }) {
+  // Bootstrap the offline outbox sync (client-only, no-op on SSR).
+  useEffect(() => {
+    startAutoSync();
+  }, []);
+
   return (
     <div className="dark relative min-h-screen overflow-x-hidden bg-background text-foreground">
       <div className="pointer-events-none fixed inset-0 hero-bg opacity-70" />
