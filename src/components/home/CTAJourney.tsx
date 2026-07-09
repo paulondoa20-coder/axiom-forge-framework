@@ -37,7 +37,6 @@ const steps = [
     cta: "Publier",
     hint: "Gratuit",
     hintIcon: Gift,
-
     to: "/flash",
     icon: Rocket,
     color: "var(--flash)",
@@ -47,21 +46,18 @@ const steps = [
 
 export function CTAJourney() {
   return (
-    <section className="space-y-3">
-      <div className="flex flex-wrap items-end justify-between gap-2 px-1">
-        <div className="min-w-0">
-          <h2 className="text-base font-semibold tracking-tight text-foreground/95">
-            Démarre en 3 temps
-          </h2>
-          <p className="text-[11px] text-muted-foreground">
-            Comprends, choisis, lance.
-          </p>
-        </div>
-
-        <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+    <section className="space-y-4">
+      <header className="flex flex-col items-center gap-1.5 text-center px-2">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
           Parcours express
         </span>
-      </div>
+        <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-foreground/95">
+          Démarre en 3 temps
+        </h2>
+        <p className="text-xs sm:text-sm text-muted-foreground">
+          Comprends, choisis, lance.
+        </p>
+      </header>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {steps.map((s, i) => {
@@ -80,11 +76,11 @@ export function CTAJourney() {
                 })
               }
               aria-label={`${s.label} — ${s.cta}`}
-              className="glass-surface lift-on-hover group relative flex flex-col gap-3 overflow-hidden rounded-2xl p-4 active:scale-[0.98]"
+              className="glass-surface lift-on-hover group relative flex flex-col items-center gap-3 overflow-hidden rounded-2xl p-5 text-center active:scale-[0.98]"
               style={{ ["--shadow-color" as never]: s.color }}
             >
               <span
-                className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full opacity-25 blur-2xl transition-opacity duration-500 group-hover:opacity-70"
+                className="pointer-events-none absolute -top-16 left-1/2 h-32 w-32 -translate-x-1/2 rounded-full opacity-20 blur-2xl transition-opacity duration-500 group-hover:opacity-60"
                 style={{ background: s.gradient }}
               />
               <span
@@ -94,42 +90,43 @@ export function CTAJourney() {
                 }}
               />
 
-              <div className="relative flex items-center justify-between">
-                <div
-                  className="flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 motion-reduce:transition-none motion-reduce:group-hover:scale-100 motion-reduce:group-hover:rotate-0"
-                  style={{
-                    background: `color-mix(in oklch, ${s.color} 18%, transparent)`,
-                    color: s.color,
-                    boxShadow: `inset 0 0 0 1px color-mix(in oklch, ${s.color} 30%, transparent)`,
-                  }}
-                >
-                  <Icon className="h-5 w-5" strokeWidth={2.2} />
-                </div>
-                <span
-                  className="text-[10px] font-bold tracking-[0.18em]"
-                  style={{ color: s.color }}
-                >
-                  {s.n} · {s.label}
-                </span>
+              <span
+                className="relative text-[10px] font-bold tracking-[0.2em]"
+                style={{ color: s.color }}
+              >
+                {s.n} · {s.label.toUpperCase()}
+              </span>
+
+              <div
+                className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl transition-transform duration-300 group-hover:scale-110 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                style={{
+                  background: `color-mix(in oklch, ${s.color} 18%, transparent)`,
+                  color: s.color,
+                  boxShadow: `inset 0 0 0 1px color-mix(in oklch, ${s.color} 32%, transparent)`,
+                }}
+              >
+                <Icon className="h-6 w-6" strokeWidth={2.2} />
               </div>
 
-              <div className="relative min-w-0 flex-1 space-y-1">
+              <div className="relative flex min-w-0 flex-col items-center gap-1">
                 <h3 className="text-[15px] font-semibold leading-snug tracking-tight text-foreground/95">
                   {s.title}
                 </h3>
-                <p className="text-[12px] leading-relaxed text-muted-foreground">{s.desc}</p>
+                <p className="text-[12px] leading-relaxed text-muted-foreground">
+                  {s.desc}
+                </p>
               </div>
 
-              <div className="relative flex items-center justify-between gap-2">
+              <div className="relative mt-auto flex flex-col items-center gap-2 pt-1">
                 <span
-                  className="inline-flex items-center gap-1.5 text-[12px] font-semibold transition-transform duration-300 group-hover:translate-x-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0"
+                  className="inline-flex items-center gap-1.5 text-[13px] font-semibold transition-transform duration-300 group-hover:translate-x-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0"
                   style={{ color: s.color }}
                 >
                   {s.cta}
                   <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0" />
                 </span>
                 <span
-                  className="inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
+                  className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground"
                   style={{
                     background: `color-mix(in oklch, ${s.color} 10%, transparent)`,
                   }}
