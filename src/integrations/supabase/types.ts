@@ -14,16 +14,316 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      conversation_participants: {
+        Row: {
+          conversation_id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_participants_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          context_id: string | null
+          context_type: string | null
+          created_at: string
+          id: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          context_id?: string | null
+          context_type?: string | null
+          created_at?: string
+          id?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          context_id?: string | null
+          context_type?: string | null
+          created_at?: string
+          id?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      flashes: {
+        Row: {
+          category: string | null
+          city: string | null
+          content: string
+          created_at: string
+          id: string
+          image_url: string | null
+          neighborhood: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          city?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          neighborhood?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          city?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          neighborhood?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      needs: {
+        Row: {
+          category: string | null
+          city: string | null
+          created_at: string
+          description: string | null
+          id: string
+          neighborhood: string | null
+          status: Database["public"]["Enums"]["need_status"]
+          title: string
+          updated_at: string
+          urgency: Database["public"]["Enums"]["need_urgency"]
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          city?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          neighborhood?: string | null
+          status?: Database["public"]["Enums"]["need_status"]
+          title: string
+          updated_at?: string
+          urgency?: Database["public"]["Enums"]["need_urgency"]
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          city?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          neighborhood?: string | null
+          status?: Database["public"]["Enums"]["need_status"]
+          title?: string
+          updated_at?: string
+          urgency?: Database["public"]["Enums"]["need_urgency"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          link: string | null
+          read_at: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          city: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          neighborhood: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          city?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          neighborhood?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          city?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          neighborhood?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      trust_verifications: {
+        Row: {
+          created_at: string
+          evidence_url: string | null
+          id: string
+          status: Database["public"]["Enums"]["verification_status"]
+          type: Database["public"]["Enums"]["verification_type"]
+          updated_at: string
+          user_id: string
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          evidence_url?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["verification_status"]
+          type: Database["public"]["Enums"]["verification_type"]
+          updated_at?: string
+          user_id: string
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          evidence_url?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["verification_status"]
+          type?: Database["public"]["Enums"]["verification_type"]
+          updated_at?: string
+          user_id?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_conversation_participant: {
+        Args: { _conversation_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
+      need_status: "open" | "fulfilled" | "closed"
+      need_urgency: "low" | "normal" | "high" | "urgent"
+      notification_type: "flash" | "need" | "message" | "trust" | "system"
+      verification_status: "pending" | "verified" | "rejected"
+      verification_type: "email" | "phone" | "identity" | "address"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +450,13 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+      need_status: ["open", "fulfilled", "closed"],
+      need_urgency: ["low", "normal", "high", "urgent"],
+      notification_type: ["flash", "need", "message", "trust", "system"],
+      verification_status: ["pending", "verified", "rejected"],
+      verification_type: ["email", "phone", "identity", "address"],
+    },
   },
 } as const
