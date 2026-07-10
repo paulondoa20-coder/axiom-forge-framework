@@ -210,6 +210,27 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_contacts: {
+        Row: {
+          created_at: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -219,7 +240,6 @@ export type Database = {
           display_name: string | null
           id: string
           neighborhood: string | null
-          phone: string | null
           updated_at: string
         }
         Insert: {
@@ -230,7 +250,6 @@ export type Database = {
           display_name?: string | null
           id: string
           neighborhood?: string | null
-          phone?: string | null
           updated_at?: string
         }
         Update: {
@@ -241,7 +260,6 @@ export type Database = {
           display_name?: string | null
           id?: string
           neighborhood?: string | null
-          phone?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -305,17 +323,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
-      is_conversation_participant: {
-        Args: { _conversation_id: string; _user_id: string }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
