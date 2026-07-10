@@ -1,12 +1,70 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { createClient } from "@supabase/supabase-js";
 
 export const Route = createFileRoute("/api/assistant")({
   server: {
     handlers: {
       POST: async ({ request }) => {
         try {
-          const { messages } = await request.json();
+          // Require authenticated caller
+          const authHeader = request.headers.get("authorization") ?? "";
+          if (!authHeader.startsWith("Bearer ")) {
+            return new Response(JSON.stringify({ error: "Unauthorized" }), {
+              status: 401,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+          const token = authHeader.slice("Bearer ".length).trim();
+          if (!token || token.split(".").length !== 3) {
+            return new Response(JSON.stringify({ error: "Unauthorized" }), {
+              status: 401,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+          const SUPABASE_URL = process.env.SUPABASE_URL;
+          const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
+          if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+            return new Response(JSON.stringify({ error: "Server not configured" }), {
+              status: 500,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+          const authClient = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+            auth: { persistSession: false, autoRefreshToken: false, storage: undefined },
+          });
+          const { data: claims, error: claimsError } = await authClient.auth.getClaims(token);
+          if (claimsError || !claims?.claims?.sub) {
+            return new Response(JSON.stringify({ error: "Unauthorized" }), {
+              status: 401,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+
+          const body = await request.json();
+          const messages = body?.messages;
+          if (!Array.isArray(messages) || messages.length === 0 || messages.length > 20) {
+            return new Response(JSON.stringify({ error: "Invalid messages" }), {
+              status: 400,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+          for (const m of messages) {
+            if (
+              !m ||
+              typeof m.role !== "string" ||
+              !["system", "user", "assistant"].includes(m.role) ||
+              typeof m.content !== "string" ||
+              m.content.length > 4000
+            ) {
+              return new Response(JSON.stringify({ error: "Invalid message shape" }), {
+                status: 400,
+                headers: { "Content-Type": "application/json" },
+              });
+            }
+          }
+
           const LOVABLE_API_KEY = process.env.LOVABLE_API_KEY;
+
           if (!LOVABLE_API_KEY) {
             return new Response(JSON.stringify({ error: "Missing LOVABLE_API_KEY" }), {
               status: 500,
