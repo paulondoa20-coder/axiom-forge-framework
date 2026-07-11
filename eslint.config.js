@@ -30,6 +30,23 @@ export default tseslint.config(
                 "TanStack Start does not use the Next.js `server-only` package. Rename the module to `*.server.ts` or mark it with `@tanstack/react-start/server-only`.",
             },
           ],
+          patterns: [
+            {
+              group: ["@/integrations/supabase/client", "@/integrations/supabase/client.server"],
+              message:
+                "Architecture rule: Supabase clients ne sont accessibles que depuis src/domains/*/repositories/*.remote.ts, src/routes/api/**, ou les fichiers *.server.ts / *.functions.ts. Les composants et hooks doivent passer par un domaine (voir docs/architecture/DEPENDENCY-MATRIX.md).",
+            },
+            {
+              group: ["@/packages/offline/*"],
+              message:
+                "Architecture rule: @/packages/offline est réservé aux repositories locaux (*.local.ts) et aux packages internes. Les composants doivent passer par les hooks du domaine (voir docs/architecture/DEPENDENCY-MATRIX.md).",
+            },
+            {
+              group: ["@/domains/*/repositories/*", "@/domains/*/services/*", "@/domains/*/use-cases/*", "@/domains/*/entities/*"],
+              message:
+                "Architecture rule: les imports cross-domain passent uniquement par le barrel public @/domains/<name> (index.ts). Voir docs/architecture/DEPENDENCY-MATRIX.md.",
+            },
+          ],
         },
       ],
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
