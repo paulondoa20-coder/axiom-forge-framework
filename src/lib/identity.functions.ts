@@ -5,8 +5,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 /**
  * Identity server functions.
  *
- * IMPORTANT — client-safe module. NO top-level import of `client.server`;
- * NO business logic imported from a domain (avoid client-graph leaks).
+ * Client-safe module. NO top-level import of `client.server`.
  * All Supabase access happens inside `.handler()` via the auth-scoped
  * client injected by `requireSupabaseAuth`.
  */
@@ -14,17 +13,9 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 const updateSchema = z
   .object({
     display_name: z.string().min(1).max(80).nullish(),
-    handle: z
-      .string()
-      .min(2)
-      .max(40)
-      .regex(/^[a-z0-9._-]+$/i)
-      .nullish(),
     avatar_url: z.string().url().nullish(),
-    headline: z.string().max(160).nullish(),
     bio: z.string().max(2000).nullish(),
-    country: z.string().max(80).nullish(),
-    city: z.string().max(120).nullish(),
+    neighborhood: z.string().max(120).nullish(),
   })
   .strict();
 
@@ -44,9 +35,10 @@ export const updateMyProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => updateSchema.parse(input))
   .handler(async ({ data, context }) => {
+    const patch: Record<string, unknown> = { ...data };
     const { data: row, error } = await context.supabase
       .from("profiles")
-      .update(data)
+      .update(patch)
       .eq("id", context.userId)
       .select("*")
       .single();
