@@ -13,15 +13,33 @@ export interface OutboxRecord {
   lastError?: string;
 }
 
+export interface OutboxConflictRecord {
+  id: string;
+  outboxId: string;
+  domain: string;
+  operation: string;
+  local: unknown;
+  remote: unknown;
+  strategy?: "lww" | "auto" | "user" | "server";
+  createdAt: number;
+  resolved: 0 | 1;
+}
+
+export interface SyncMetaRecord {
+  key: string; // e.g. `<domain>:cursor` or `<domain>:last_pull`
+  value: unknown;
+  updatedAt: number;
+}
+
 export interface ConversationRecord {
   id: string;
-  data: unknown; // full Conversation DTO snapshot
+  data: unknown;
   updatedAt: number;
 }
 
 export interface NotificationRecord {
   id: string;
-  data: unknown; // full Notification DTO snapshot
+  data: unknown;
   read: 0 | 1;
   updatedAt: number;
 }
@@ -38,6 +56,8 @@ export interface MetaRecord {
 
 class VitalaDatabase extends Dexie {
   outbox!: Table<OutboxRecord, string>;
+  outbox_conflicts!: Table<OutboxConflictRecord, string>;
+  sync_meta!: Table<SyncMetaRecord, string>;
   conversations!: Table<ConversationRecord, string>;
   notifications!: Table<NotificationRecord, string>;
   preferences!: Table<PreferenceRecord, string>;
@@ -47,6 +67,16 @@ class VitalaDatabase extends Dexie {
     super("vitala");
     this.version(1).stores({
       outbox: "id, domain, status, createdAt",
+      conversations: "id, updatedAt",
+      notifications: "id, read, updatedAt",
+      preferences: "key",
+      meta: "key",
+    });
+    // v2 (P1-04) — outbox conflict log + per-domain sync cursors.
+    this.version(2).stores({
+      outbox: "id, domain, status, createdAt",
+      outbox_conflicts: "id, outboxId, domain, resolved, createdAt",
+      sync_meta: "key, updatedAt",
       conversations: "id, updatedAt",
       notifications: "id, read, updatedAt",
       preferences: "key",
