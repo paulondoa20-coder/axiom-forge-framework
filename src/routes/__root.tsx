@@ -116,6 +116,11 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  useEffect(() => {
+    // Offline outbox: register per-domain handlers and start auto-drain.
+    registerMessagingSync();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <PrefsProvider>
