@@ -47,6 +47,9 @@
   --color-surface-3: var(--surface-3);
   --color-glass: var(--glass);
   --color-glass-border: var(--glass-border);
+  --color-scrim: var(--overlay-scrim);
+  --color-overlay: var(--overlay-hover);
+  --color-overlay-strong: var(--overlay-strong);
 
   --shadow-glass: 0 8px 32px -8px oklch(0 0 0 / 0.4), 0 0 0 1px oklch(1 0 0 / 0.06) inset;
   --shadow-float: 0 20px 60px -20px oklch(0 0 0 / 0.6);
