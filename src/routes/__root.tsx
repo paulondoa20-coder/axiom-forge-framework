@@ -120,6 +120,7 @@ function RootComponent() {
   useEffect(() => {
     // Offline outbox: register per-domain handlers and start auto-drain.
     registerMessagingSync();
+    registerNotificationSync();
   }, []);
 
   return (
