@@ -47,6 +47,9 @@
   --color-surface-3: var(--surface-3);
   --color-glass: var(--glass);
   --color-glass-border: var(--glass-border);
+  --color-scrim: var(--overlay-scrim);
+  --color-overlay: var(--overlay-hover);
+  --color-overlay-strong: var(--overlay-strong);
 
   --shadow-glass: 0 8px 32px -8px oklch(0 0 0 / 0.4), 0 0 0 1px oklch(1 0 0 / 0.06) inset;
   --shadow-float: 0 20px 60px -20px oklch(0 0 0 / 0.6);
@@ -146,6 +149,12 @@
   --glass: oklch(0.22 0.025 270 / 0.55);
   --glass-border: oklch(1 0 0 / 0.08);
 
+  /* Overlays / scrims — theme-aware. Prefer these over `bg-black/N` or `bg-white/N`. */
+  --overlay-scrim: oklch(0 0 0 / 0.8);
+  --overlay-hover: oklch(1 0 0 / 0.05);
+  --overlay-strong: oklch(1 0 0 / 0.1);
+  --overlay-invert: oklch(1 0 0 / 1); /* thumb / dot indicators */
+
   --card: oklch(0.21 0.024 270);
   --card-foreground: oklch(0.97 0.005 270);
   --popover: oklch(0.21 0.024 270);
@@ -203,6 +212,11 @@
 
   --glass: oklch(0.96 0.008 270 / 0.7);
   --glass-border: oklch(0 0 0 / 0.08);
+
+  --overlay-scrim: oklch(0 0 0 / 0.55);
+  --overlay-hover: oklch(0 0 0 / 0.04);
+  --overlay-strong: oklch(0 0 0 / 0.08);
+  --overlay-invert: oklch(0.15 0.02 270 / 1);
 
   --card: oklch(0.97 0.008 270);
   --card-foreground: oklch(0.15 0.02 270);

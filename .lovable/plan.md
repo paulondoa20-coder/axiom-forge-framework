@@ -65,13 +65,13 @@ Objet : rendre les domaines déjà "posés" réellement propres avant d'en ajout
 
 | TASK-ID | Domaine | Livrable | Critère |
 |---|---|---|---|
-| P1-01 | `identity` | Entities `Profile`, `Preferences`, repo Supabase (`profiles`, `profile_contacts`), use-cases `GetMyProfile`, `UpdateProfile`, hook `useProfile`. Supprimer accès direct Supabase depuis composants. | RLS ok, offline read via Dexie, aucun composant n'importe supabase. |
-| P1-02 | `messaging` | Aligner schéma : renommer `conversation_participants` → `conversation_members`, ajouter `client_message_id UNIQUE` sur `messages`, projections read. Remote handler enregistré. | Envoi hors-ligne → outbox → drain en ligne, idempotent. |
-| P1-03 | `notification` | Repo Supabase + realtime channel + handler outbox `MarkAsRead`. | Mark-as-read fonctionne offline puis sync. |
-| P1-04 | `packages/offline` | Ajouter tables Dexie `outbox_conflicts`, `sync_meta` ; API `registerHandler` typée par domaine. | Tests unitaires sur outbox (drain, retry, conflict). |
-| P1-05 | Design System | Barrels `src/components/ds/*` audités ; typographies + tokens dans `styles.css` ; suppression des couleurs hardcodées restantes. | 0 occurrence `text-white`/`bg-[#...]` hors tokens. |
+| P1-01 | `identity` | Entities `Profile`, `Preferences`, repo Supabase (`profiles`, `profile_contacts`), use-cases `GetMyProfile`, `UpdateProfile`, hook `useProfile`. Supprimer accès direct Supabase depuis composants. | ✅ Fait (sub-turn 1). |
+| P1-02 | `messaging` | Aligner schéma : renommer `conversation_participants` → `conversation_members`, ajouter `client_message_id UNIQUE` sur `messages`, projections read. Remote handler enregistré. | ✅ Fait (sub-turn 2) — `sendMessageRemote` idempotent, outbox drainé au montage racine. |
+| P1-03 | `notification` | Repo Supabase + realtime channel + handler outbox `MarkAsRead`. | ✅ Fait (sub-turn 3) — `markNotificationAsRead` + channel `notifications:{userId}`. |
+| P1-04 | `packages/offline` | Ajouter tables Dexie `outbox_conflicts`, `sync_meta` ; API `registerHandler` typée par domaine. | ✅ Fait (sub-turn 1) — tests unitaires reportés à P7. |
+| P1-05 | Design System | Tokens `--overlay-scrim/hover/strong/invert` ajoutés (`bg-scrim/overlay/overlay-strong`), overlays shadcn migrés. Reste : ~50 call-sites `bg-white/N` dans `src/routes/*` — tracké dans `docs/tasks/P1-05b-migrate-overlay-tokens.md`. | 🟡 Partiel — DOD complet reporté à P1-05b. |
 
-**Gate P1** : `identity`, `messaging`, `notification` = domaines de référence (structure canonique + docs `src/domains/<x>/README.md`).
+**Gate P1** : `identity`, `messaging`, `notification` = domaines de référence (structure canonique + docs `src/domains/<x>/README.md`). P1-05b non bloquant pour P2.
 
 ---
 

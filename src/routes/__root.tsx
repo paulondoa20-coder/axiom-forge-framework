@@ -12,6 +12,7 @@ import {
 import appCss from "../styles.css?url";
 import { PrefsProvider } from "@/components/preferences/PrefsProvider";
 import { registerMessagingSync } from "@/domains/messaging";
+import { registerNotificationSync } from "@/domains/notification";
 
 function NotFoundComponent() {
   return (
@@ -119,6 +120,7 @@ function RootComponent() {
   useEffect(() => {
     // Offline outbox: register per-domain handlers and start auto-drain.
     registerMessagingSync();
+    registerNotificationSync();
   }, []);
 
   return (
