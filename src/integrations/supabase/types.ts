@@ -14,20 +14,23 @@ export type Database = {
   }
   public: {
     Tables: {
-      conversation_participants: {
+      conversation_members: {
         Row: {
           conversation_id: string
           joined_at: string
+          role: string
           user_id: string
         }
         Insert: {
           conversation_id: string
           joined_at?: string
+          role?: string
           user_id: string
         }
         Update: {
           conversation_id?: string
           joined_at?: string
+          role?: string
           user_id?: string
         }
         Relationships: [
@@ -44,6 +47,7 @@ export type Database = {
         Row: {
           context_id: string | null
           context_type: string | null
+          conversation_type: string
           created_at: string
           id: string
           title: string | null
@@ -52,6 +56,7 @@ export type Database = {
         Insert: {
           context_id?: string | null
           context_type?: string | null
+          conversation_type?: string
           created_at?: string
           id?: string
           title?: string | null
@@ -60,6 +65,7 @@ export type Database = {
         Update: {
           context_id?: string | null
           context_type?: string | null
+          conversation_type?: string
           created_at?: string
           id?: string
           title?: string | null
@@ -105,25 +111,34 @@ export type Database = {
       }
       messages: {
         Row: {
+          client_message_id: string | null
           content: string
           conversation_id: string
           created_at: string
           id: string
           sender_id: string
+          status: string
+          updated_at: string
         }
         Insert: {
+          client_message_id?: string | null
           content: string
           conversation_id: string
           created_at?: string
           id?: string
           sender_id: string
+          status?: string
+          updated_at?: string
         }
         Update: {
+          client_message_id?: string | null
           content?: string
           conversation_id?: string
           created_at?: string
           id?: string
           sender_id?: string
+          status?: string
+          updated_at?: string
         }
         Relationships: [
           {
