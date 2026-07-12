@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
@@ -10,6 +11,7 @@ import {
 
 import appCss from "../styles.css?url";
 import { PrefsProvider } from "@/components/preferences/PrefsProvider";
+import { registerMessagingSync } from "@/domains/messaging";
 
 function NotFoundComponent() {
   return (
