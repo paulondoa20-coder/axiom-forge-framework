@@ -66,6 +66,13 @@ export const syncPush = createServerFn({ method: "POST" })
       .select("id, client_op_id, status");
 
     if (error) throw new Error(error.message);
+
+    const { audit } = await import("@/packages/core/audit.server");
+    await audit.log(context.userId, "sync_push", "sync_operation", null, {
+      count: rows.length,
+      entities: [...new Set(rows.map((r) => r.entity_type))],
+    });
+
     return { accepted: inserted ?? [] };
   });
 
