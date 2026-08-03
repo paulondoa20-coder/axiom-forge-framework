@@ -1,2 +1,2 @@
-// Package: core — scaffold. See docs/architecture/ADR-001.
-export {};
+export type { AuditAction, AuditEvent } from "./audit";
+export { observabilityMiddleware, redact } from "./observability";

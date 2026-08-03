@@ -77,16 +77,17 @@ Objet : rendre les domaines déjà "posés" réellement propres avant d'en ajout
 
 ### Phase 2 — Infrastructure transverse (semaine 4)
 
-| TASK-ID | Livrable | Docs |
+| TASK-ID | Livrable | Statut |
 |---|---|---|
-| P2-01 | Migration `audit_logs` + service `audit.log(action, entity, id)` appelé par tous les use-cases sensibles | DB Spec §audit |
-| P2-02 | Migration `sync_operation`, `sync_checkpoint`, `sync_conflict` côté Supabase + endpoints server functions `syncPush`, `syncPull`, `syncAck` | Build-Sync |
-| P2-03 | `packages/notifications` : templates push/email (stubs), branchement notif domaine → outbox | Build-Overview |
-| P2-04 | `packages/auth` : `roles.ts`, `policies.ts`, guard `requireRole('admin')` pour server functions | AI-Security-Rules |
-| P2-05 | `packages/config` : constantes centralisées (limites, feature flags, versions API) | Build-Conventions |
-| P2-06 | Observabilité : middleware server-fn qui log `X-Request-Id`, latence, erreurs (redaction PII) | Deployment Guide |
+| P2-01 | Migration `audit_logs` (RLS lecture propriétaire + admin, aucune écriture client) + `private.log_audit_event` + service `@/packages/core/audit.server` (`audit.log`), branché sur `updateMyProfile`, `sendMessageRemote`, `syncPush` | ✅ Fait |
+| P2-02 | Migration `sync_operations` / `sync_checkpoints` / `sync_conflicts` (RLS par utilisateur, unicité `(user, device, client_op_id)`) + server functions `syncPush`, `syncPull`, `syncAck`, `resolveSyncConflict` (`src/lib/sync.functions.ts`) | ✅ Fait |
+| P2-03 | `packages/notifications` : `templates.ts` (wording unique) + `channels.ts` (in_app/push/email, stubs derrière feature flags) | ✅ Fait |
+| P2-04 | `packages/auth` : `roles.ts`, `policies.ts`, guard `requireRole('admin')` (vérification via client RLS de l'appelant, jamais service_role) | ✅ Fait |
+| P2-05 | `packages/config` : `API_VERSION`, `LIMITS`, `TIMINGS`, `FEATURES` + `isEnabled()` | ✅ Fait |
+| P2-06 | `packages/core/observability.ts` : middleware server-fn (requestId, latence, erreurs, `redact()` PII) enregistré dans `src/start.ts` | ✅ Fait |
 
-**Gate P2** : audit + sync tables opérationnels, chaque mutation majeure trace un log.
+**Gate P2** : ✅ audit + sync opérationnels, linter Supabase = 0 warning. Reste à brancher `audit.log` sur les futurs use-cases P3.
+
 
 ---
 

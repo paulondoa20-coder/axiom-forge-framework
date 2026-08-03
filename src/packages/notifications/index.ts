@@ -1,2 +1,8 @@
-// Package: notifications — scaffold. See docs/architecture/ADR-001.
-export {};
+export { renderNotification } from "./templates";
+export type {
+  NotificationKind,
+  NotificationPayload,
+  RenderedNotification,
+} from "./templates";
+export { dispatch } from "./channels";
+export type { Channel, DispatchResult } from "./channels";

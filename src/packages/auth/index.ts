@@ -1,2 +1,5 @@
-// Package: auth — scaffold. See docs/architecture/ADR-001.
-export {};
+export { APP_ROLES, isAppRole, satisfies } from "./roles";
+export type { AppRole } from "./roles";
+export { policies, ForbiddenError } from "./policies";
+export type { Actor } from "./policies";
+export { requireRole } from "./guards";

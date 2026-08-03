@@ -42,5 +42,11 @@ export const updateMyProfile = createServerFn({ method: "POST" })
       .select("*")
       .single();
     if (error) throw new Error(error.message);
+
+    const { audit } = await import("@/packages/core/audit.server");
+    await audit.log(context.userId, "update", "profile", context.userId, {
+      fields: Object.keys(data),
+    });
+
     return row;
   });

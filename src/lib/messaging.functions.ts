@@ -48,5 +48,11 @@ export const sendMessageRemote = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
+
+    const { audit } = await import("@/packages/core/audit.server");
+    await audit.log(userId, "create", "message", row.id, {
+      conversation_id: data.conversation_id,
+    });
+
     return { success: true, data: { message_id: row.id, deduped: false } };
   });
