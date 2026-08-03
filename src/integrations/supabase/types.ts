@@ -508,15 +508,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      log_audit_event: {
-        Args: {
-          _action: string
-          _entity_id?: string
-          _entity_type: string
-          _metadata?: Json
-        }
-        Returns: string
-      }
+      [_ in never]: never
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
