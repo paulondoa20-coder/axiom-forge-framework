@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          ip_address: string | null
+          metadata: Json
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       conversation_members: {
         Row: {
           conversation_id: string
@@ -279,6 +315,140 @@ export type Database = {
         }
         Relationships: []
       }
+      sync_checkpoints: {
+        Row: {
+          created_at: string
+          cursor: string | null
+          device_id: string
+          entity_type: string
+          id: string
+          last_synced_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          cursor?: string | null
+          device_id: string
+          entity_type: string
+          id?: string
+          last_synced_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          cursor?: string | null
+          device_id?: string
+          entity_type?: string
+          id?: string
+          last_synced_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      sync_conflicts: {
+        Row: {
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          local_payload: Json
+          operation_id: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          server_payload: Json
+          strategy: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          local_payload?: Json
+          operation_id?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          server_payload?: Json
+          strategy?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          local_payload?: Json
+          operation_id?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          server_payload?: Json
+          strategy?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sync_conflicts_operation_id_fkey"
+            columns: ["operation_id"]
+            isOneToOne: false
+            referencedRelation: "sync_operations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sync_operations: {
+        Row: {
+          action: Database["public"]["Enums"]["sync_op_action"]
+          applied_at: string | null
+          client_op_id: string
+          created_at: string
+          device_id: string
+          entity_id: string | null
+          entity_type: string
+          error: string | null
+          id: string
+          payload: Json
+          status: Database["public"]["Enums"]["sync_op_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action: Database["public"]["Enums"]["sync_op_action"]
+          applied_at?: string | null
+          client_op_id: string
+          created_at?: string
+          device_id: string
+          entity_id?: string | null
+          entity_type: string
+          error?: string | null
+          id?: string
+          payload?: Json
+          status?: Database["public"]["Enums"]["sync_op_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          action?: Database["public"]["Enums"]["sync_op_action"]
+          applied_at?: string | null
+          client_op_id?: string
+          created_at?: string
+          device_id?: string
+          entity_id?: string | null
+          entity_type?: string
+          error?: string | null
+          id?: string
+          payload?: Json
+          status?: Database["public"]["Enums"]["sync_op_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       trust_verifications: {
         Row: {
           created_at: string
@@ -338,13 +508,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      log_audit_event: {
+        Args: {
+          _action: string
+          _entity_id?: string
+          _entity_type: string
+          _metadata?: Json
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
       need_status: "open" | "fulfilled" | "closed"
       need_urgency: "low" | "normal" | "high" | "urgent"
       notification_type: "flash" | "need" | "message" | "trust" | "system"
+      sync_op_action: "create" | "update" | "delete"
+      sync_op_status: "pending" | "applied" | "failed" | "conflict"
       verification_status: "pending" | "verified" | "rejected"
       verification_type: "email" | "phone" | "identity" | "address"
     }
@@ -478,6 +658,8 @@ export const Constants = {
       need_status: ["open", "fulfilled", "closed"],
       need_urgency: ["low", "normal", "high", "urgent"],
       notification_type: ["flash", "need", "message", "trust", "system"],
+      sync_op_action: ["create", "update", "delete"],
+      sync_op_status: ["pending", "applied", "failed", "conflict"],
       verification_status: ["pending", "verified", "rejected"],
       verification_type: ["email", "phone", "identity", "address"],
     },
