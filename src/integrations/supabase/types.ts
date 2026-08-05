@@ -85,6 +85,7 @@ export type Database = {
           context_type: string | null
           conversation_type: string
           created_at: string
+          created_by: string
           id: string
           title: string | null
           updated_at: string
@@ -94,6 +95,7 @@ export type Database = {
           context_type?: string | null
           conversation_type?: string
           created_at?: string
+          created_by?: string
           id?: string
           title?: string | null
           updated_at?: string
@@ -103,6 +105,7 @@ export type Database = {
           context_type?: string | null
           conversation_type?: string
           created_at?: string
+          created_by?: string
           id?: string
           title?: string | null
           updated_at?: string
