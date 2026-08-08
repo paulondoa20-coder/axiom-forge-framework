@@ -3,7 +3,7 @@ import { FloatingDock } from "./FloatingDock";
 import { TopBar } from "./TopBar";
 import { AIAssistant } from "@/components/ai/AIAssistant";
 import { Onboarding } from "@/components/onboarding/Onboarding";
-import { InstallInvite } from "@/domains/install";
+import { InstallInvite, registerServiceWorker } from "@/domains/install";
 import { startAutoSync } from "@/packages/offline";
 
 
@@ -11,6 +11,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   // Bootstrap the offline outbox sync (client-only, no-op on SSR).
   useEffect(() => {
     startAutoSync();
+    void registerServiceWorker();
   }, []);
 
   return (
