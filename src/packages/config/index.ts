@@ -28,6 +28,15 @@ export const TIMINGS = {
   auditFlushMs: 1_000,
 } as const;
 
+/** Installation PWA / notifications. */
+export const INSTALL = {
+  /** Route ouverte au clic sur la notification de bienvenue. */
+  welcomeRoute: "/",
+  /** Pause après refus de l'invite (ms). */
+  snoozeMs: 7 * 24 * 60 * 60 * 1000,
+} as const;
+
+
 /** Feature flags — un seul endroit pour activer/désactiver un chantier. */
 export const FEATURES = {
   offlineSync: true,
