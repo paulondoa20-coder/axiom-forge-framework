@@ -8,10 +8,10 @@ import { InstallGuideDialog } from "./InstallGuideDialog";
  * Invitation d'installation (UI présentationnelle).
  * Aucune logique métier ici : tout passe par les hooks du domaine.
  */
-export function InstallInvite() {
+export function InstallInvite({ welcomeRoute }: { welcomeRoute?: string } = {}) {
   const { shouldInvite, platform, deviceKind, orientation, canPrompt, install, dismiss } =
     useInstallPrompt();
-  const { canAsk, request } = useNotificationPermission();
+  const { canAsk, request } = useNotificationPermission(welcomeRoute);
   const [guideOpen, setGuideOpen] = useState(false);
   const [askNotif, setAskNotif] = useState(false);
 

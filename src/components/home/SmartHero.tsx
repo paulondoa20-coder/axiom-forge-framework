@@ -1,7 +1,10 @@
+import { useEffect, useState } from "react";
 import { Sparkles, ArrowRight, MapPin, Activity } from "lucide-react";
 
 export function SmartHero({ name = "Alex" }: { name?: string }) {
-  const hour = new Date().getHours();
+  // SSR-safe : l'heure réelle n'est lue qu'après hydratation (12 = neutre).
+  const [hour, setHour] = useState(12);
+  useEffect(() => setHour(new Date().getHours()), []);
   const greet =
     hour < 6 ? "Encore debout" : hour < 12 ? "Bonjour" : hour < 18 ? "Bel après-midi" : "Bonsoir";
 
