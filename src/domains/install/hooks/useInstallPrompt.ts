@@ -15,6 +15,7 @@ import { promptInstall, type PromptInstallResult } from "../use-cases/PromptInst
 import { dismissInstall, isInstallSnoozed } from "../use-cases/DismissInstall";
 import { isInstalledRemembered, rememberInstalled } from "../use-cases/InstallState";
 import { sendWelcomeOnce } from "../use-cases/WelcomeNotification";
+import { trackInstall } from "../services/InstallTelemetry";
 
 const SSR_STATE: InstallState = {
   platform: "unknown",
