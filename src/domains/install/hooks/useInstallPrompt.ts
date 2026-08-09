@@ -48,22 +48,36 @@ export function useInstallPrompt() {
 
   useEffect(() => {
     startInstallListener();
-    setState(readState());
+    const initial = readState();
+    setState(initial);
     setSnoozed(isInstallSnoozed());
     setReady(true);
+    trackInstall("install_state", {
+      scope: "install",
+      status: initial.status,
+      platform: initial.platform,
+      device: initial.deviceKind,
+      standalone: isStandalone(),
+    });
 
     const unsubscribe = subscribe(() => {
       if (isStandalone()) rememberInstalled();
-      setState(readState());
+      const next = readState();
+      setState(next);
+      trackInstall("install_state", { scope: "install", status: next.status, source: "event" });
     });
 
     // Persistance de l'état installé : standalone, appinstalled, ou apps liées.
-    if (isStandalone()) rememberInstalled();
+    if (isStandalone()) {
+      rememberInstalled();
+      trackInstall("install_detected", { source: "standalone" });
+    }
     void queryRelatedApps().then((related) => {
       if (!related) return;
       rememberInstalled();
       markInstalledInMemory();
       setState(readState());
+      trackInstall("install_detected", { source: "related_apps" });
     });
 
     // Bienvenue post-installation, une seule fois (si permission déjà accordée).
@@ -73,7 +87,9 @@ export function useInstallPrompt() {
   }, []);
 
   const install = useCallback(async (): Promise<PromptInstallResult> => {
+    trackInstall("install_prompt_shown", { native: hasNativePrompt() });
     const result = await promptInstall();
+    trackInstall("install_prompt_result", { result, success: result === "accepted" });
     if (result === "accepted") {
       rememberInstalled();
       markInstalledInMemory();
@@ -85,6 +101,7 @@ export function useInstallPrompt() {
   const dismiss = useCallback(() => {
     dismissInstall();
     setSnoozed(true);
+    trackInstall("install_dismissed", {});
   }, []);
 
   const shouldInvite =
