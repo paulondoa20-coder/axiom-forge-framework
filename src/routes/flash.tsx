@@ -30,6 +30,15 @@ import {
   Sliders,
   MessageCircle,
 } from "lucide-react";
+import {
+  useFlashFeed,
+  useMyFlashes,
+  flashTitle,
+  flashAge,
+  composeFlashContent,
+} from "@/domains/publication";
+import { useProfile } from "@/domains/identity";
+
 
 export const Route = createFileRoute("/flash")({
   head: () => ({ meta: [{ title: "Flash — Publish in seconds" }] }),
