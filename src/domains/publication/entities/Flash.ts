@@ -72,3 +72,19 @@ export function flashAge(iso: string, now = Date.now()): string {
   const d = Math.floor(h / 24);
   return d === 1 ? "hier" : `il y a ${d} j`;
 }
+
+/**
+ * Until P3B-01 adds dedicated columns, a flash stores its title on the first
+ * line of `content` and the body on the following lines.
+ */
+export function composeFlashContent(title: string, body: string): string {
+  return body.trim() ? `${title.trim()}\n${body.trim()}` : title.trim();
+}
+
+export function flashTitle(content: string): string {
+  return content.split("\n")[0]?.trim() || "Flash";
+}
+
+export function flashBody(content: string): string {
+  return content.split("\n").slice(1).join("\n").trim();
+}
