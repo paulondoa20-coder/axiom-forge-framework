@@ -3,9 +3,11 @@ export type {
   OutboxRecord,
   ConversationRecord,
   NotificationRecord,
+  FlashRecord,
   PreferenceRecord,
   MetaRecord,
 } from "./dexie/db";
+
 export { enqueue, pending, markDone, markFailed, markInFlight } from "./outbox/outbox";
 export type { OutboxEntry } from "./outbox/outbox";
 export { drain, startAutoSync, registerHandler } from "./sync/sync";

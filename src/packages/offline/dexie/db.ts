@@ -44,6 +44,18 @@ export interface NotificationRecord {
   updatedAt: number;
 }
 
+export interface FlashRecord {
+  id: string;
+  data: unknown;
+  /** 1 when the row belongs to the signed-in user. */
+  mine: 0 | 1;
+  /** 1 while the row is queued in the outbox and not yet on the server. */
+  pending: 0 | 1;
+  createdAt: number;
+  updatedAt: number;
+}
+
+
 export interface PreferenceRecord {
   key: string;
   value: unknown;
@@ -60,6 +72,7 @@ class VitalaDatabase extends Dexie {
   sync_meta!: Table<SyncMetaRecord, string>;
   conversations!: Table<ConversationRecord, string>;
   notifications!: Table<NotificationRecord, string>;
+  flashes!: Table<FlashRecord, string>;
   preferences!: Table<PreferenceRecord, string>;
   meta!: Table<MetaRecord, string>;
 
@@ -82,8 +95,20 @@ class VitalaDatabase extends Dexie {
       preferences: "key",
       meta: "key",
     });
+    // v3 (L1-1) — local mirror of the Flash feed (offline-first publication).
+    this.version(3).stores({
+      outbox: "id, domain, status, createdAt",
+      outbox_conflicts: "id, outboxId, domain, resolved, createdAt",
+      sync_meta: "key, updatedAt",
+      conversations: "id, updatedAt",
+      notifications: "id, read, updatedAt",
+      flashes: "id, mine, pending, createdAt, updatedAt",
+      preferences: "key",
+      meta: "key",
+    });
   }
 }
+
 
 let _db: VitalaDatabase | null = null;
 

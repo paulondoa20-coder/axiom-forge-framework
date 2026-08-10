@@ -30,6 +30,15 @@ import {
   Sliders,
   MessageCircle,
 } from "lucide-react";
+import {
+  useFlashFeed,
+  useMyFlashes,
+  flashTitle,
+  flashAge,
+  composeFlashContent,
+} from "@/domains/publication";
+import { useProfile } from "@/domains/identity";
+
 
 export const Route = createFileRoute("/flash")({
   head: () => ({ meta: [{ title: "Flash — Publish in seconds" }] }),
@@ -49,12 +58,6 @@ const TYPES: { id: FlashType; label: string; icon: typeof Zap; tint: string }[] 
 
 const DURATIONS = ["Flash 1h", "24h", "7 jours"] as const;
 
-const RECENT = [
-  { type: "sale", title: "iPhone 13 — état neuf", price: "420 €", where: "Lyon 7", time: "2 min" },
-  { type: "service", title: "Cours de guitare à domicile", price: "25 €/h", where: "Paris 11", time: "8 min" },
-  { type: "urgent", title: "Recherche garde chien ce soir", price: "—", where: "Bordeaux", time: "14 min" },
-  { type: "promo", title: "-30% café torréfié maison", price: "9 €", where: "Marseille", time: "21 min" },
-] as const;
 
 const SCAN_RESULTS = [
   { title: "Électricien dispo ce soir", dist: "0.4 km", tag: "Service", tint: "var(--scan)", time: "il y a 3 min" },
@@ -501,22 +504,63 @@ const MINE = [
 ] as const;
 
 function MyFlashes() {
-  const lookup = (k: string) => TYPES.find((t) => t.id === k)!;
+  const { flashes, loading } = useMyFlashes();
+  const lookup = (k: string | null) => TYPES.find((t) => t.id === k) ?? TYPES[0];
+
+  if (loading) {
+    return (
+      <section className="space-y-2">
+        <h3 className="px-1 text-sm font-medium text-muted-foreground">Mes flashs</h3>
+        <div className="glass-surface space-y-3 rounded-2xl p-3.5">
+          {[0, 1].map((i) => (
+            <div key={i} className="flex items-center gap-3">
+              <div className="h-9 w-9 shrink-0 animate-pulse rounded-lg bg-overlay" />
+              <div className="flex-1 space-y-1.5">
+                <div className="h-3 w-2/3 animate-pulse rounded bg-overlay" />
+                <div className="h-2.5 w-1/3 animate-pulse rounded bg-overlay" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  if (flashes.length === 0) {
+    return (
+      <section className="space-y-2">
+        <h3 className="px-1 text-sm font-medium text-muted-foreground">Mes flashs</h3>
+        <SmartCard className="flex flex-col items-center gap-2 p-6 text-center">
+          <span
+            className="flex h-10 w-10 items-center justify-center rounded-xl"
+            style={{ background: "color-mix(in oklch, var(--flash) 18%, transparent)", color: "var(--flash)" }}
+          >
+            <Zap className="h-4 w-4" />
+          </span>
+          <p className="text-sm font-medium">Rien de publié pour l'instant</p>
+          <p className="max-w-[26ch] text-xs text-muted-foreground">
+            Ton premier Flash prend 10 secondes. Le quartier attend.
+          </p>
+        </SmartCard>
+      </section>
+    );
+  }
+
   return (
     <section className="space-y-2">
       <div className="flex items-end justify-between px-1">
         <h3 className="text-sm font-medium text-muted-foreground">Mes flashs</h3>
-        <button className="text-[11px] text-muted-foreground hover:text-foreground">Tout voir</button>
+        <span className="text-[11px] text-muted-foreground/70">{flashes.length} publié{flashes.length > 1 ? "s" : ""}</span>
       </div>
       <div className="glass-surface overflow-hidden rounded-2xl">
-        {MINE.map((m, i) => {
-          const t = lookup(m.type);
+        {flashes.map((m, i) => {
+          const t = lookup(m.category);
           const Icon = t.icon;
           return (
             <div
-              key={i}
+              key={m.id}
               className="flex items-center gap-3 px-3 py-2.5"
-              style={i < MINE.length - 1 ? { borderBottom: "1px solid var(--glass-border)" } : undefined}
+              style={i < flashes.length - 1 ? { borderBottom: "1px solid var(--glass-border)" } : undefined}
             >
               <div
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
@@ -528,15 +572,21 @@ function MyFlashes() {
                 <Icon className="h-4 w-4" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{m.title}</p>
-                <div className="mt-0.5 flex items-center gap-3 text-[11px] text-muted-foreground">
-                  <span style={{ color: m.color }}>● {m.status}</span>
-                  <span className="inline-flex items-center gap-1"><Eye className="h-3 w-3" />{m.views}</span>
-                  <span className="inline-flex items-center gap-1"><Users className="h-3 w-3" />{m.msgs}</span>
-                  <span className="ml-auto">{m.time}</span>
+                <p className="truncate text-sm font-medium">{flashTitle(m.content)}</p>
+                <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-muted-foreground">
+                  <span style={{ color: m.pending ? "var(--warning)" : "var(--success)" }}>
+                    ● {m.pending ? "En attente de sync" : "En ligne"}
+                  </span>
+                  {m.neighborhood && (
+                    <span className="inline-flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      {m.neighborhood}
+                    </span>
+                  )}
+                  <span className="ml-auto">{flashAge(m.createdAt)}</span>
                 </div>
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
             </div>
           );
         })}
@@ -544,6 +594,7 @@ function MyFlashes() {
     </section>
   );
 }
+
 
 /* ----------------------------- HERO ----------------------------- */
 
@@ -610,59 +661,99 @@ function QuickTypes({ onPick }: { onPick: (t: FlashType) => void }) {
 /* -------------------------- RECENT FLASHES ----------------------- */
 
 function RecentFlashes() {
-  const lookup = (k: string) => TYPES.find((t) => t.id === k)!;
+  const { flashes, loading } = useFlashFeed(6);
+  const lookup = (k: string | null) => TYPES.find((t) => t.id === k) ?? TYPES[0];
+
   return (
     <section className="space-y-2">
       <div className="flex items-end justify-between px-1">
-        <h3 className="text-sm font-medium text-muted-foreground">Inspiration récente</h3>
-        <span className="text-[11px] text-muted-foreground/70">Mises à jour live</span>
+        <h3 className="text-sm font-medium text-muted-foreground">Dans ton quartier</h3>
+        <span className="text-[11px] text-muted-foreground/70">
+          {loading ? "Chargement…" : "Mises à jour live"}
+        </span>
       </div>
-      <div className="grid grid-cols-1 gap-2">
-        {RECENT.map((r, i) => {
-          const t = lookup(r.type);
-          const Icon = t.icon;
-          return (
-            <SmartCard key={i} className="p-3.5">
-              <div className="flex items-center gap-3">
-                <div
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-                  style={{
-                    background: `color-mix(in oklch, ${t.tint} 22%, transparent)`,
-                    color: t.tint,
-                  }}
-                >
-                  <Icon className="h-4 w-4" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="rounded-full px-1.5 py-0.5 text-[10px] font-medium"
-                      style={{
-                        background: `color-mix(in oklch, ${t.tint} 16%, transparent)`,
-                        color: t.tint,
-                      }}
-                    >
-                      {t.label}
-                    </span>
-                    <span className="text-[11px] text-muted-foreground">{r.time}</span>
-                  </div>
-                  <p className="truncate text-sm font-medium">{r.title}</p>
-                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                    <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" />{r.where}</span>
-                    {r.price !== "—" && (
-                      <span className="inline-flex items-center gap-1"><Tag className="h-3 w-3" />{r.price}</span>
-                    )}
-                  </div>
-                </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+
+      {loading && (
+        <div className="grid grid-cols-1 gap-2">
+          {[0, 1, 2].map((i) => (
+            <SmartCard key={i} className="flex items-center gap-3 p-3.5">
+              <div className="h-10 w-10 shrink-0 animate-pulse rounded-xl bg-overlay" />
+              <div className="flex-1 space-y-2">
+                <div className="h-3 w-1/2 animate-pulse rounded bg-overlay" />
+                <div className="h-2.5 w-1/3 animate-pulse rounded bg-overlay" />
               </div>
             </SmartCard>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
+
+      {!loading && flashes.length === 0 && (
+        <SmartCard className="flex flex-col items-center gap-2 p-6 text-center">
+          <p className="text-sm font-medium">Le quartier est calme</p>
+          <p className="max-w-[30ch] text-xs text-muted-foreground">
+            Aucun Flash pour l'instant. Ouvre le bal, les voisins suivront.
+          </p>
+        </SmartCard>
+      )}
+
+      {!loading && flashes.length > 0 && (
+        <div className="grid grid-cols-1 gap-2">
+          {flashes.map((r) => {
+            const t = lookup(r.category);
+            const Icon = t.icon;
+            const place = r.neighborhood ?? r.city;
+            return (
+              <SmartCard key={r.id} className="p-3.5">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                    style={{
+                      background: `color-mix(in oklch, ${t.tint} 22%, transparent)`,
+                      color: t.tint,
+                    }}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span
+                        className="rounded-full px-1.5 py-0.5 text-[10px] font-medium"
+                        style={{
+                          background: `color-mix(in oklch, ${t.tint} 16%, transparent)`,
+                          color: t.tint,
+                        }}
+                      >
+                        {t.label}
+                      </span>
+                      <span className="text-[11px] text-muted-foreground">{flashAge(r.createdAt)}</span>
+                    </div>
+                    <p className="truncate text-sm font-medium">{flashTitle(r.content)}</p>
+                    <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+                      {place && (
+                        <span className="inline-flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          {place}
+                        </span>
+                      )}
+                      {r.author && (
+                        <span className="inline-flex items-center gap-1 truncate">
+                          <Users className="h-3 w-3" />
+                          {r.author.displayName}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                </div>
+              </SmartCard>
+            );
+          })}
+        </div>
+      )}
     </section>
   );
 }
+
 
 /* ============================ CREATE SHEET ========================== */
 
@@ -682,11 +773,46 @@ function CreateSheet({ onClose }: { onClose: () => void }) {
   const t = useMemo(() => TYPES.find((x) => x.id === type)!, [type]);
   const canNext = title.trim().length > 1;
 
+  const { profile } = useProfile();
+  const { publish } = useMyFlashes();
+  const [publishing, setPublishing] = useState(false);
+  const [publishError, setPublishError] = useState<string | null>(null);
+
+  const onPublish = async () => {
+    if (!profile) {
+      setPublishError("Connecte-toi pour publier ton Flash.");
+      return;
+    }
+    setPublishing(true);
+    setPublishError(null);
+    try {
+      await publish(
+        {
+          content: composeFlashContent(title, desc),
+          category: type,
+          neighborhood: location.trim() || null,
+          imageUrl: null,
+        },
+        {
+          id: profile.id,
+          displayName: profile.displayName ?? "Moi",
+          avatarUrl: profile.avatarUrl,
+        },
+      );
+      onClose();
+    } catch (err) {
+      setPublishError(err instanceof Error ? err.message : "Publication impossible.");
+    } finally {
+      setPublishing(false);
+    }
+  };
+
   const onUpload = (file?: File) => {
     if (!file) return;
     const url = URL.createObjectURL(file);
     setImage(url);
   };
+
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 backdrop-blur-sm animate-[fade-up_0.25s_var(--ease-smooth)_both]">
@@ -923,15 +1049,21 @@ function CreateSheet({ onClose }: { onClose: () => void }) {
             </div>
 
             <button
-              onClick={onClose}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-[15px] font-semibold text-[oklch(0.18_0.02_60)] transition-all active:scale-[0.98]"
+              onClick={onPublish}
+              disabled={publishing}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-[15px] font-semibold text-[oklch(0.18_0.02_60)] transition-all active:scale-[0.98] disabled:opacity-50"
               style={{ background: "var(--gradient-flash)", boxShadow: "var(--shadow-glow-flash)" }}
             >
-              <Check className="h-4 w-4" /> Publier le Flash
+              <Check className="h-4 w-4" /> {publishing ? "Publication…" : "Publier le Flash"}
             </button>
             <p className="text-center text-[11px] text-muted-foreground">
-              Aperçu uniquement — aucune donnée envoyée.
+              {publishError
+                ? publishError
+                : profile
+                  ? "Publié même hors ligne — la synchro se fait toute seule."
+                  : "Connecte-toi pour publier dans ton quartier."}
             </p>
+
           </div>
         )}
       </div>
