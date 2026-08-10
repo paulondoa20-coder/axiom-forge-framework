@@ -44,6 +44,18 @@ export interface NotificationRecord {
   updatedAt: number;
 }
 
+export interface FlashRecord {
+  id: string;
+  data: unknown;
+  /** 1 when the row belongs to the signed-in user. */
+  mine: 0 | 1;
+  /** 1 while the row is queued in the outbox and not yet on the server. */
+  pending: 0 | 1;
+  createdAt: number;
+  updatedAt: number;
+}
+
+
 export interface PreferenceRecord {
   key: string;
   value: unknown;
