@@ -501,22 +501,63 @@ const MINE = [
 ] as const;
 
 function MyFlashes() {
-  const lookup = (k: string) => TYPES.find((t) => t.id === k)!;
+  const { flashes, loading } = useMyFlashes();
+  const lookup = (k: string | null) => TYPES.find((t) => t.id === k) ?? TYPES[0];
+
+  if (loading) {
+    return (
+      <section className="space-y-2">
+        <h3 className="px-1 text-sm font-medium text-muted-foreground">Mes flashs</h3>
+        <div className="glass-surface space-y-3 rounded-2xl p-3.5">
+          {[0, 1].map((i) => (
+            <div key={i} className="flex items-center gap-3">
+              <div className="h-9 w-9 shrink-0 animate-pulse rounded-lg bg-overlay" />
+              <div className="flex-1 space-y-1.5">
+                <div className="h-3 w-2/3 animate-pulse rounded bg-overlay" />
+                <div className="h-2.5 w-1/3 animate-pulse rounded bg-overlay" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  if (flashes.length === 0) {
+    return (
+      <section className="space-y-2">
+        <h3 className="px-1 text-sm font-medium text-muted-foreground">Mes flashs</h3>
+        <SmartCard className="flex flex-col items-center gap-2 p-6 text-center">
+          <span
+            className="flex h-10 w-10 items-center justify-center rounded-xl"
+            style={{ background: "color-mix(in oklch, var(--flash) 18%, transparent)", color: "var(--flash)" }}
+          >
+            <Zap className="h-4 w-4" />
+          </span>
+          <p className="text-sm font-medium">Rien de publié pour l'instant</p>
+          <p className="max-w-[26ch] text-xs text-muted-foreground">
+            Ton premier Flash prend 10 secondes. Le quartier attend.
+          </p>
+        </SmartCard>
+      </section>
+    );
+  }
+
   return (
     <section className="space-y-2">
       <div className="flex items-end justify-between px-1">
         <h3 className="text-sm font-medium text-muted-foreground">Mes flashs</h3>
-        <button className="text-[11px] text-muted-foreground hover:text-foreground">Tout voir</button>
+        <span className="text-[11px] text-muted-foreground/70">{flashes.length} publié{flashes.length > 1 ? "s" : ""}</span>
       </div>
       <div className="glass-surface overflow-hidden rounded-2xl">
-        {MINE.map((m, i) => {
-          const t = lookup(m.type);
+        {flashes.map((m, i) => {
+          const t = lookup(m.category);
           const Icon = t.icon;
           return (
             <div
-              key={i}
+              key={m.id}
               className="flex items-center gap-3 px-3 py-2.5"
-              style={i < MINE.length - 1 ? { borderBottom: "1px solid var(--glass-border)" } : undefined}
+              style={i < flashes.length - 1 ? { borderBottom: "1px solid var(--glass-border)" } : undefined}
             >
               <div
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
@@ -528,15 +569,21 @@ function MyFlashes() {
                 <Icon className="h-4 w-4" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{m.title}</p>
-                <div className="mt-0.5 flex items-center gap-3 text-[11px] text-muted-foreground">
-                  <span style={{ color: m.color }}>● {m.status}</span>
-                  <span className="inline-flex items-center gap-1"><Eye className="h-3 w-3" />{m.views}</span>
-                  <span className="inline-flex items-center gap-1"><Users className="h-3 w-3" />{m.msgs}</span>
-                  <span className="ml-auto">{m.time}</span>
+                <p className="truncate text-sm font-medium">{flashTitle(m.content)}</p>
+                <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-muted-foreground">
+                  <span style={{ color: m.pending ? "var(--warning)" : "var(--success)" }}>
+                    ● {m.pending ? "En attente de sync" : "En ligne"}
+                  </span>
+                  {m.neighborhood && (
+                    <span className="inline-flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      {m.neighborhood}
+                    </span>
+                  )}
+                  <span className="ml-auto">{flashAge(m.createdAt)}</span>
                 </div>
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
             </div>
           );
         })}
@@ -544,6 +591,7 @@ function MyFlashes() {
     </section>
   );
 }
+
 
 /* ----------------------------- HERO ----------------------------- */
 
