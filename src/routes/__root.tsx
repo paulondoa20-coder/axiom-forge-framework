@@ -13,6 +13,8 @@ import appCss from "../styles.css?url";
 import { PrefsProvider } from "@/components/preferences/PrefsProvider";
 import { registerMessagingSync } from "@/domains/messaging";
 import { registerNotificationSync } from "@/domains/notification";
+import { registerPublicationSync } from "@/domains/publication";
+
 
 function NotFoundComponent() {
   return (
