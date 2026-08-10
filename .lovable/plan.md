@@ -1,289 +1,186 @@
+# Plan final VITALA — de l'état actuel à la V1 en production
 
-# 🗺️ Plan d'implémentation Vitala — État actuel → Production
-
-> **Contrat de lecture** : ce plan est la référence exécutable. Chaque agent (IA ou humain) doit, avant de coder une tâche, lire (1) ce plan, (2) le doc listé dans la colonne "Docs source" de la tâche, (3) l'ADR-001. Aucune tâche ne démarre sans son `TASK-ID`, son domaine et ses critères de validation.
-
----
-
-## 0. Règles d'or (non négociables, valables partout)
-
-1. **Docs > code**. Priorité : AI-Constitution → Vision → Build Blueprint → API Contracts → DB Spec → AI Rules → demande utilisateur.
-2. **Un domaine = un propriétaire = un dossier `src/domains/<name>/`**. Aucun accès inter-domaines hors API/events/projections.
-3. **Frontend propre** : aucune logique métier dans les composants, aucun accès direct à Supabase depuis un composant, uniquement des hooks branchés sur les use-cases du domaine.
-4. **Offline-first obligatoire** : toute mutation passe par l'Outbox Dexie, drainée par le sync engine. Anonymous sync interdit.
-5. **DB** : RLS partout, `created_at` partout, index sur toutes les FK, migration versionnée, aucune écriture directe hors migration.
-6. **API** : versionnée, contrat stable, un domaine par API, contrôleurs sans logique métier.
-7. **Un fichier composant < 300 lignes**. Pas de dossiers `misc/`, `helpers/`, `temp/`.
-8. **Aucune invention** : si un contrat manque, on stoppe et on demande. On ne devine ni le schéma, ni le nom, ni la règle métier.
-9. **Gate de phase** : une phase se ferme uniquement si (features ✅ + tests ✅ + docs sync ✅ + audit archi ✅).
-10. **Multi-agents** : chaque tâche est isolée par domaine + `TASK-ID`, pas deux agents sur le même domaine en parallèle sans découpe explicite.
+Ce plan reprend **toutes** les propositions listées précédemment, les ordonne, les complète, et les découpe en lots exécutables par plusieurs agents sans conflit. Chaque lot a un identifiant, un périmètre de fichiers, et un critère de validation.
 
 ---
 
-## 1. État actuel (baseline)
+## Principe d'exécution
 
-**Stack en place** : TanStack Start (Vite) + Cloudflare Worker + Tailwind v4 + shadcn + Dexie + Lovable Cloud (Supabase managé).
-
-**Fait** :
-- Scaffold `src/domains/*` (16 domaines) + `src/packages/*` (offline/shared/auth/ai/graph/…), ADR-001.
-- Offline core : Dexie (`vitala` DB), Outbox, Sync engine, BaseRepository — non branché aux domaines pour l'instant sauf `messaging`/`notification`/`identity` en shim.
-- Auth Supabase (email + Google + placeholder SMS), tables `profiles`, `user_roles`, `flashes`, `needs`, `conversations`, `conversation_participants`, `messages`, `notifications`, `trust_verifications`, `profile_contacts`. RLS + fonctions `private.has_role` / `private.is_conversation_participant`, trigger `handle_new_user`.
-- Hardening sécurité : assistant API auth + validation, phone privé, trust self-verify bloqué, security-definer déplacé en schéma `private`.
-- Home / hub / scan / flash / radar / messages / notifications / profile / trust : UI présente, données majoritairement mockées, pas de use-cases.
-
-**Écarts vs spec Vitala** (à combler) :
-- Schéma DB partiel : manquent `opportunities`, `applications`, `organizations`, `organization_members`, `flash_responses`, `flash_reactions`, `radars`, `radar_matches`, `vita_goals`, `vita_memories`, `audit_logs`, `sync_operation`, `sync_checkpoint`, `sync_conflict`, `billing_*`, `support_tickets`, `conversation_members` (le modèle actuel `conversation_participants` doit s'aligner sur la spec).
-- Domaines non peuplés : `trust`, `publication`, `opportunity`, `verification`, `network`, `community`, `knowledge`, `geo`, `search`, `marketplace`, `events`, `projects`, `achievements` sont des barrels vides.
-- Aucune couche API v1 officielle (`/api/v1/*`) : les routes actuelles sont côté page + un `/api/assistant`. Pas de contrat REST versionné.
-- Sync : Outbox opérationnel côté local, aucun handler `registerHandler` remote, pas de projection Supabase `sync_operation`.
-- Intelligence : `packages/ai`, `packages/graph`, `domains/search` vides. Pas de projections lecture.
-- Environnements : un seul (Lovable managed). Pas de staging isolé, pas de pipeline documenté, pas de DR playbook.
-- Docs de domaine (README par domaine, matrice de dépendances côté code, journal des events) inexistants.
+- Un lot = un domaine = un agent à la fois. Pas deux agents sur `src/domains/<x>/`.
+- Toute mutation passe par un use-case, jamais depuis un composant.
+- Toute migration DB est sérialisée (revue avant application) : `CREATE TABLE` → `GRANT` → `ENABLE RLS` → `CREATE POLICY`.
+- Chaque lot se termine par : code + doc de domaine (`README.md`) + vérification linter DB à 0 warning critique.
 
 ---
 
-## 2. Phases de livraison (séquentielles, gates obligatoires)
+## Lot 1 — Quick wins UX (données réelles à la place des mocks)
 
-### Phase 0 — Préparation & garde-fous (semaine 1)
-Objet : figer les règles pour que N agents travaillent sans se marcher dessus.
+Objectif : que l'app cesse d'afficher des données inventées. C'est le lot avec le meilleur rapport effort/effet visible.
 
-| TASK-ID | Titre | Livrable | Docs source |
-|---|---|---|---|
-| P0-01 | ADR mise à jour "Multi-agent workflow" | `docs/architecture/ADR-002-multi-agent-workflow.md` (tableau : qui touche quoi, règle "un domaine = un agent à la fois", process de handover) | AI-Constitution, AI-Workflow, AI-Task-Lifecycle |
-| P0-02 | Template de tâche | `docs/tasks/_TEMPLATE.md` (TASK-ID, domaine, objectif, docs, critères, dépendances) | AI-Task-Template |
-| P0-03 | Journal de décisions | `docs/decisions/README.md` + convention ADR | AI-Rulebook |
-| P0-04 | Matrice des dépendances au code | `docs/architecture/DEPENDENCY-MATRIX.md` (autorisées + interdites) | Build-Domains Annexe C |
-| P0-05 | Lint archi | Règle ESLint `no-restricted-imports` : composants ne peuvent importer que `@/domains/*/index`, jamais `@/integrations/supabase/*` ni `@/packages/offline/*` directement | Build-Conventions |
-| P0-06 | Env matrix | `docs/ops/environments.md` : Local / Dev / Staging / Prod, secrets, données | Build-Supabase B |
-
-**Gate P0** : template + lint + matrice mergées ; tout PR suivant utilise le template.
-
----
-
-### Phase 1 — Fondation domaine (semaines 2-3)
-Objet : rendre les domaines déjà "posés" réellement propres avant d'en ajouter.
-
-| TASK-ID | Domaine | Livrable | Critère |
-|---|---|---|---|
-| P1-01 | `identity` | Entities `Profile`, `Preferences`, repo Supabase (`profiles`, `profile_contacts`), use-cases `GetMyProfile`, `UpdateProfile`, hook `useProfile`. Supprimer accès direct Supabase depuis composants. | ✅ Fait (sub-turn 1). |
-| P1-02 | `messaging` | Aligner schéma : renommer `conversation_participants` → `conversation_members`, ajouter `client_message_id UNIQUE` sur `messages`, projections read. Remote handler enregistré. | ✅ Fait (sub-turn 2) — `sendMessageRemote` idempotent, outbox drainé au montage racine. |
-| P1-03 | `notification` | Repo Supabase + realtime channel + handler outbox `MarkAsRead`. | ✅ Fait (sub-turn 3) — `markNotificationAsRead` + channel `notifications:{userId}`. |
-| P1-04 | `packages/offline` | Ajouter tables Dexie `outbox_conflicts`, `sync_meta` ; API `registerHandler` typée par domaine. | ✅ Fait (sub-turn 1) — tests unitaires reportés à P7. |
-| P1-05 | Design System | Tokens `--overlay-scrim/hover/strong/invert` ajoutés (`bg-scrim/overlay/overlay-strong`), overlays shadcn migrés. Reste : ~50 call-sites `bg-white/N` dans `src/routes/*` — tracké dans `docs/tasks/P1-05b-migrate-overlay-tokens.md`. | 🟡 Partiel — DOD complet reporté à P1-05b. |
-
-**Gate P1** : `identity`, `messaging`, `notification` = domaines de référence (structure canonique + docs `src/domains/<x>/README.md`). P1-05b non bloquant pour P2.
-
----
-
-### Phase 2 — Infrastructure transverse (semaine 4)
-
-| TASK-ID | Livrable | Statut |
+| ID | Tâche | Détail |
 |---|---|---|
-| P2-01 | Migration `audit_logs` (RLS lecture propriétaire + admin, aucune écriture client) + `private.log_audit_event` + service `@/packages/core/audit.server` (`audit.log`), branché sur `updateMyProfile`, `sendMessageRemote`, `syncPush` | ✅ Fait |
-| P2-02 | Migration `sync_operations` / `sync_checkpoints` / `sync_conflicts` (RLS par utilisateur, unicité `(user, device, client_op_id)`) + server functions `syncPush`, `syncPull`, `syncAck`, `resolveSyncConflict` (`src/lib/sync.functions.ts`) | ✅ Fait |
-| P2-03 | `packages/notifications` : `templates.ts` (wording unique) + `channels.ts` (in_app/push/email, stubs derrière feature flags) | ✅ Fait |
-| P2-04 | `packages/auth` : `roles.ts`, `policies.ts`, guard `requireRole('admin')` (vérification via client RLS de l'appelant, jamais service_role) | ✅ Fait |
-| P2-05 | `packages/config` : `API_VERSION`, `LIMITS`, `TIMINGS`, `FEATURES` + `isEnabled()` | ✅ Fait |
-| P2-06 | `packages/core/observability.ts` : middleware server-fn (requestId, latence, erreurs, `redact()` PII) enregistré dans `src/start.ts` | ✅ Fait |
+| L1-1 | Feed Flash réel | Brancher `/flash` sur la table `flashes` via un domaine `publication` (repo remote + local Dexie), pagination `-created_at`. |
+| L1-2 | Cloche temps réel | `TopBar` connecté au canal Realtime `notifications:{userId}` + badge non-lus. |
+| L1-3 | Messages réels | `/messages` sur `conversations` + `messages` (déjà idempotents), scroll et accusé d'envoi. |
+| L1-4 | Profil éditable | `/profile` branché sur `useProfile` : édition nom, bio, quartier, ville. |
+| L1-5 | Home vivante | `LiveStrip`, `SmartFeed`, `RecentActivity` alimentés par les 20 derniers flashes/needs au lieu des tableaux en dur. |
+| L1-6 | Indicateur de sync | Pastille « hors ligne / en attente / synchronisé » dans le `TopBar`, alimentée par l'outbox. |
 
-**Gate P2** : ✅ audit + sync opérationnels, linter Supabase = 0 warning. Reste à brancher `audit.log` sur les futurs use-cases P3.
-
+Validation : plus aucun tableau de données factices importé dans `src/components/home/*` et `src/routes/flash.tsx`.
 
 ---
 
-### Phase 3 — Domaines métier MVP (semaines 5-9)
-Ordre imposé par la spec : **UDI → Flash → Mission → Trust**.
+## Lot 2 — Domaine UDI (identité) complet
 
-#### 3.A UDI (Unified Digital Identity)
-| TASK-ID | Livrable |
+| ID | Tâche |
 |---|---|
-| P3A-01 | Migration : compléter `profiles` (headline, bio, avatar_url, country, city, icv_score) + agréger providers (email, phone privé, google id) |
-| P3A-02 | Domaine `identity` : entities complètes, repo, use-cases `UpsertProfile`, `RecomputeIcv`, `GetPublicProfile` |
-| P3A-03 | UI Profile : édition, avatar upload (Supabase Storage bucket `avatars`, RLS), viewer public |
-| P3A-04 | API v1 : `GET /api/v1/profiles/:id`, `PATCH /api/v1/profiles/me` (server routes sous `/api/v1/`) |
+| L2-1 | Migration `profiles` : `headline`, `country`, `icv_score`, index sur `city`. |
+| L2-2 | Bucket de stockage `avatars` + politiques (lecture publique, écriture propriétaire). |
+| L2-3 | Use-cases `UpsertProfile`, `GetPublicProfile`, `RecomputeIcv`. |
+| L2-4 | UI : page d'édition de profil, upload d'avatar avec recadrage simple, profil public en lecture. |
+| L2-5 | API `GET /api/v1/profiles/:id`, `PATCH /api/v1/profiles/me`. |
 
-#### 3.B Flash
-| P3B-01 | Migrations : `flashes` (aligner sur DB Spec — content, type, visibility, status, counts, soft delete), `flash_responses`, `flash_reactions` avec triggers de compte + RLS |
-| P3B-02 | Domaine `publication` (owner: Flash) : entities `Flash`, `FlashResponse`, `FlashReaction` ; repo offline (Dexie tables `flashes`, `flash_responses`) + repo remote |
-| P3B-03 | Use-cases : `PublishFlash`, `ListFeedFlashes`, `ReactToFlash`, `RespondToFlash` — tous via Outbox |
-| P3B-04 | UI : route `/flash` branchée sur `useFlashFeed`, création offline-first, retrait des mocks home `LiveStrip/SmartFeed` remplacés par vraies données |
-| P3B-05 | API v1 : `POST/GET/PATCH/DELETE /api/v1/flashes`, pagination `page/page_size`, tri `-created_at` |
-
-#### 3.C Mission
-| P3C-01 | Migrations : `organizations`, `organization_members` (unique `(org,profile)`), `opportunities`, `applications` (unique `(opp,profile)`) — RLS + index FK |
-| P3C-02 | Domaine `opportunity` : entities, repo, use-cases `PublishOpportunity`, `RespondOpportunity`, `SelectCandidate`, `ValidateAction`, `CloseMission` |
-| P3C-03 | Domaine `network` : membership org, invitations |
-| P3C-04 | UI : refonte `radar` en "opportunités" côté conso, page `/organizations/[slug]`, dashboard org |
-| P3C-05 | API v1 : `POST /api/v1/opportunities`, `POST /api/v1/opportunities/:id/applications`, `PATCH …/select`, `PATCH …/validate` |
-
-#### 3.D Trust
-| P3D-01 | Compléter `trust_verifications` + tables `trust_proofs`, `trust_events` ; fonction `private.recompute_trust_score(profile_id)` |
-| P3D-02 | Domaine `trust` : entities, repo, use-cases `SubmitVerification`, `ReviewVerification` (moderator), `RecomputeScore` |
-| P3D-03 | Domaine `verification` : workflow moderateur, files d'attente |
-| P3D-04 | UI : page `/trust`, `TrustBadge` connecté au score réel, filtres modérateur |
-| P3D-05 | API v1 : `POST /api/v1/trust/verifications`, `GET /api/v1/trust/profiles/:id` |
-
-**Gate P3** : parcours complet **besoin → publication → réponse → sélection → validation → clôture** exécutable en démo, avec `icv_score` qui bouge.
+Validation : un visiteur non connecté voit un profil public ; le propriétaire peut le modifier hors-ligne et la mutation se rejoue à la reconnexion.
 
 ---
 
-### Phase 4 — Sync offline complet (semaine 10)
+## Lot 3 — Domaine Flash (publication)
 
-| TASK-ID | Livrable |
+| ID | Tâche |
 |---|---|
-| P4-01 | Handlers Outbox enregistrés pour tous les use-cases mutants (identity, publication, opportunity, trust, messaging, notification) |
-| P4-02 | Server functions `syncPush(ops[])`, `syncPull(since)`, `resolveConflict(id, strategy)` |
-| P4-03 | Politiques de conflit par domaine documentées (`src/domains/<x>/README.md` : LWW / auto-merge / user / server) |
-| P4-04 | UI : indicateur "hors ligne / en attente / synchronisé" dans `TopBar` |
-| P4-05 | Tests scénarios : coupure réseau, doublons idempotents (`client_message_id`), reprise partielle |
+| L3-1 | Migration : aligner `flashes` sur la spec (type, visibilité, statut, compteurs, suppression douce) + `flash_responses` + `flash_reactions` avec triggers de comptage, RLS et GRANT. |
+| L3-2 | Entités `Flash`, `FlashResponse`, `FlashReaction` ; repos local (Dexie) + remote. |
+| L3-3 | Use-cases `PublishFlash`, `ListFeedFlashes`, `ReactToFlash`, `RespondToFlash` — tous via l'outbox. |
+| L3-4 | UI : composition d'un flash (texte, catégorie, quartier, image), fil, réactions, réponses en fil. |
+| L3-5 | API `POST/GET/PATCH/DELETE /api/v1/flashes`. |
 
-**Gate P4** : démo offline 5 minutes → reconnexion → 0 perte, 0 doublon.
+Validation : publier un flash en mode avion, revenir en ligne, le flash apparaît une seule fois.
 
 ---
 
-### Phase 5 — Intelligence (semaines 11-12)
-Règle : **lecture seule, jamais d'écriture sur tables domaines.**
+## Lot 4 — Domaine Mission (opportunités & organisations)
 
-| TASK-ID | Livrable |
+| ID | Tâche |
 |---|---|
-| P5-01 | Vues Postgres `v_flash_feed`, `v_opportunity_matches`, `v_profile_public` |
-| P5-02 | Domaine `search` : `SearchAll(query, filters)` via vue matérialisée + `pg_trgm` |
-| P5-03 | `packages/ai` : engine `RecommendationEngine` (règles heuristiques d'abord, LLM ensuite) branché à Lovable AI Gateway |
-| P5-04 | `packages/graph` : trust graph (bfs 2 sauts), introductions |
-| P5-05 | Domaine `radar` (moteur) : `radars` + `radar_matches` + job planifié (Supabase cron) |
-| P5-06 | Domaine `knowledge` (Veille) : ingestion feeds + résumés |
-| P5-07 | UI : Home `SmartSuggestions` + `SmartFeed` + `Opportunities` alimentés par ces moteurs |
+| L4-1 | Migrations `organizations`, `organization_members`, `opportunities`, `applications` (unicité, index FK, RLS, GRANT). |
+| L4-2 | Use-cases `PublishOpportunity`, `RespondOpportunity`, `SelectCandidate`, `ValidateAction`, `CloseMission`. |
+| L4-3 | Domaine `network` : invitations et rôles d'organisation. |
+| L4-4 | UI : `/radar` transformé en vue « opportunités », page organisation, tableau de bord organisation. |
+| L4-5 | API `/api/v1/opportunities` + sous-ressources candidature / sélection / validation. |
 
-**Gate P5** : chaque suggestion affichée est explicable (raison, source, score).
+Validation : parcours besoin → publication → réponse → sélection → validation → clôture jouable en démo.
 
 ---
 
-### Phase 6 — UX / accessibilité / i18n technique (semaine 13)
+## Lot 5 — Domaine Trust (confiance)
 
-| TASK-ID | Livrable |
+| ID | Tâche |
 |---|---|
-| P6-01 | Audit A11y (axe) : contrastes, focus visible, `aria-*`, navigation clavier |
-| P6-02 | Skeletons unifiés + `errorComponent`/`notFoundComponent` sur toutes les routes avec loader |
-| P6-03 | Setup i18n (structure `src/i18n/{fr,en}.json`) — FR par défaut, EN prêt pour V1 |
-| P6-04 | Métadonnées SEO/OG par route (title + description + og:image leaf) |
-| P6-05 | Perf : lazy routes, images `loading="lazy"`, budget < 200 kb JS home |
+| L5-1 | Tables `trust_proofs`, `trust_events` + fonction `private.recompute_trust_score(profile_id)`. |
+| L5-2 | Use-cases `SubmitVerification`, `ReviewVerification` (modérateur), `RecomputeScore`. |
+| L5-3 | File d'attente de modération (domaine `verification`). |
+| L5-4 | UI : page `/trust`, `TrustBadge` branché au score réel, filtres modérateur. |
+| L5-5 | API `/api/v1/trust/*`. |
 
-**Gate P6** : Lighthouse Home ≥ 90 (Perf/A11y/SEO/BP), 0 erreur axe critique.
-
----
-
-### Phase 7 — Intégration end-to-end (semaine 14)
-
-| P7-01 | Playwright E2E : sign-up email + Google, publier flash, répondre opportunité, valider mission, offline/online cycle |
-| P7-02 | Contract tests API v1 (schema Zod) |
-| P7-03 | Test de charge k6 sur `syncPush` + feed |
-| P7-04 | Vérification matrice de dépendances par script (`scripts/check-arch.ts` grep sur imports interdits) |
-
-**Gate P7** : suite E2E verte, contract tests verts, script archi = 0 violation.
+Validation : le score bouge après une mission validée et une vérification approuvée ; un utilisateur ne peut jamais s'auto-approuver.
 
 ---
 
-### Phase 8 — Qualité & sécurité (semaine 15)
+## Lot 6 — Sync offline complet
 
-| P8-01 | Scan Supabase Linter (`supabase--linter`) : 0 warning critique |
-| P8-02 | Revue RLS table par table, matrice `docs/security/RLS-MATRIX.md` |
-| P8-03 | Rotation secrets, revue `add_secret` |
-| P8-04 | Journalisation & rétention logs conforme (redaction PII) |
-| P8-05 | Rate limiting sur `/api/v1/*` (middleware) |
-| P8-06 | Politique de sauvegarde + procédure de restauration testée |
+| ID | Tâche |
+|---|---|
+| L6-1 | Handler outbox enregistré pour **chaque** use-case mutant des lots 2 à 5. |
+| L6-2 | Politique de conflit documentée par domaine (dernier écrivain / fusion / arbitrage utilisateur). |
+| L6-3 | UI de résolution de conflit (liste, aperçu local vs serveur, choix). |
+| L6-4 | Tests scénarios : coupure réseau, doublons, reprise partielle, expiration de session. |
 
-**Gate P8** : dernier scan sécu Lovable "clear", playbook DR exécuté au moins une fois.
-
----
-
-### Phase 9 — Mise en production (semaine 16)
-
-| P9-01 | Publication Lovable, custom domain, badge visibilité configurés |
-| P9-02 | Monitoring : erreurs runtime, `analytics_project_analytics`, alertes seuil |
-| P9-03 | Runbook incidents `docs/ops/RUNBOOK.md` |
-| P9-04 | Documentation utilisateur minimale (`docs/user/`) |
-| P9-05 | Post-mortem template |
-
-**Gate P9 = Go-Live V1**.
+Validation : 5 minutes hors ligne, reconnexion, zéro perte et zéro doublon.
 
 ---
 
-## 3. Feuille d'ordonnancement pour agents parallèles
+## Lot 7 — Intelligence (lecture seule)
 
-Règles de partage :
+| ID | Tâche |
+|---|---|
+| L7-1 | Vues `v_flash_feed`, `v_opportunity_matches`, `v_profile_public`. |
+| L7-2 | Recherche globale (`pg_trgm`) : personnes, flashes, opportunités, organisations. |
+| L7-3 | Moteur de recommandation : heuristiques d'abord (proximité, catégorie, confiance), IA ensuite. |
+| L7-4 | Graphe de confiance : chemin en 2 sauts, mises en relation suggérées. |
+| L7-5 | Radars sauvegardés + correspondances calculées par tâche planifiée. |
+| L7-6 | Home : `SmartSuggestions` et `Opportunities` alimentés par ces moteurs, chaque suggestion explicable (raison + score). |
+
+---
+
+## Lot 8 — PWA & mobile (finition)
+
+| ID | Tâche |
+|---|---|
+| L8-1 | Notifications push réelles (abonnement, envoi serveur, préférences par type). |
+| L8-2 | Écran hors-ligne dédié + file d'attente visible. |
+| L8-3 | Partage natif (Web Share) sur flash, profil, opportunité. |
+| L8-4 | Raccourcis manifeste vers Flash / Messages / Scan. |
+| L8-5 | Retour haptique et gestes (tirer pour rafraîchir, glisser pour archiver). |
+
+---
+
+## Lot 9 — Qualité, accessibilité, i18n
+
+| ID | Tâche |
+|---|---|
+| L9-1 | Audit accessibilité : contrastes, focus visible, navigation clavier, libellés ARIA. |
+| L9-2 | Squelettes de chargement unifiés + `errorComponent`/`notFoundComponent` sur toutes les routes à loader. |
+| L9-3 | Internationalisation FR/EN (structure `src/i18n/`), FR par défaut. |
+| L9-4 | SEO : titre, description, OG par route ; image OG absolue quand la page a une couverture. |
+| L9-5 | Performance : routes paresseuses, images différées, budget JS accueil < 200 ko. |
+
+---
+
+## Lot 10 — Sécurité & mise en production
+
+| ID | Tâche |
+|---|---|
+| L10-1 | Revue RLS table par table + matrice de sécurité documentée. |
+| L10-2 | Limitation de débit sur `/api/v1/*` et sur les fonctions serveur sensibles. |
+| L10-3 | Modération : signalement de contenu, blocage d'utilisateur, file admin. |
+| L10-4 | Sauvegarde et procédure de restauration testée une fois. |
+| L10-5 | Tests bout en bout (inscription, flash, mission, cycle hors-ligne) + tests de contrat API. |
+| L10-6 | Publication, domaine personnalisé, supervision des erreurs, runbook incidents. |
+
+---
+
+## Ajouts que je recommande en plus de la liste initiale
+
+1. **Modération et signalement** (L10-3) : indispensable dès qu'il y a du contenu public de quartier.
+2. **Onboarding contextuel** : à la première connexion, demander quartier + centres d'intérêt pour que le feed ne soit jamais vide.
+3. **État vide travaillé partout** : chaque liste vide propose une action (« Sois le premier à lancer un flash ici »).
+4. **Journal d'activité utilisateur** : page « mon activité » alimentée par `audit_logs` filtré propriétaire.
+5. **Invitations & parrainage** : lien d'invitation par quartier, mesure de croissance.
+6. **Tableau de bord interne** : nombre de flashes/jour, missions clôturées, taux de sync en échec.
+
+---
+
+## Ordonnancement conseillé
 
 ```text
-Parallélisable :
-- P3A ⨯ P3B ⨯ P3C ⨯ P3D peuvent avancer en parallèle SI :
-  * chaque agent est propriétaire exclusif d'un domaine
-  * les migrations DB sont sérialisées par un lead (revue avant merge)
-  * aucun agent ne touche `src/routeTree.gen.ts`, `src/integrations/supabase/*`
-    (fichiers auto-générés / réservés)
-
-Non parallélisable :
-- Phase 0, 4, 8, 9 = séquentielles
-- P2-01 (audit_logs) doit précéder P3.* (chaque use-case l'utilise)
-- Sync handlers (P4-01) nécessitent que tous les use-cases mutants existent
+Semaine 1-2 : Lot 1 (quick wins) — 1 agent, effet immédiat
+Semaine 3-6 : Lots 2, 3, 4, 5 en parallèle (1 agent par domaine, migrations sérialisées)
+Semaine 7   : Lot 6 (sync) — séquentiel, dépend des lots 2-5
+Semaine 8-9 : Lot 7 (intelligence) + Lot 8 (PWA) en parallèle
+Semaine 10  : Lot 9 (qualité) puis Lot 10 (sécurité + prod), séquentiels
 ```
-
-Attribution suggérée (N=4 agents) :
-- Agent A : Infra (P0, P2, P4, P8)
-- Agent B : UDI + Trust (P3A, P3D, P6 partie profil)
-- Agent C : Flash + Publication (P3B, P5 partie feed)
-- Agent D : Mission + Network (P3C, P5 partie opportunités)
-
-Chaque agent ouvre une PR par `TASK-ID`, référence les docs source, met à jour :
-- `src/domains/<x>/README.md`
-- `docs/decisions/` si choix structurant
-- Tests + fixtures
 
 ---
 
-## 4. Détails techniques (annexe)
+## Détails techniques
 
-**Contrats API v1** — squelette identique pour toutes les routes :
-```text
-src/routes/api/v1/<domain>/<resource>.ts   → GET/POST list+create
-src/routes/api/v1/<domain>/<resource>.$id.ts → GET/PATCH/DELETE
-```
-Réponses : `{ success, data, meta }` / erreurs : `{ success:false, error:{code,message,details} }`. Pagination `page`, `page_size`, tri `?sort=-created_at`.
-
-**Layout d'un domaine (rappel canonique)** :
-```text
-src/domains/<name>/
-  entities/     # DTO purs, zéro dépendance
-  repositories/ # local (Dexie via BaseRepository) + remote (Supabase)
-  services/     # orchestration intra-domaine
-  use-cases/    # 1 fonction = 1 cas d'usage, enfile via outbox si mutation
-  hooks/        # bindings React (SSR-safe)
-  components/   # UI présentationnelle (<300 lignes)
-  data/seed.ts  # seed isomorphique
-  README.md     # responsabilité, events publiés, conflits sync
-  index.ts      # barrel PUBLIC (seule surface autorisée)
-```
-
-**Interdits code (lint)** :
-- Import `@/integrations/supabase/*` hors `src/domains/*/repositories/*.remote.ts` et `src/routes/api/v1/**`.
-- Import `@/packages/offline/*` hors `src/domains/*/repositories/*.local.ts` et `src/packages/*`.
-- Import cross-domain : `@/domains/A` → `@/domains/B/(entities|hooks|use-cases)` uniquement via `index.ts`.
-
-**Environnements & secrets** :
-- Local : `.env` géré, données factices.
-- Dev / Staging / Prod : trois projets Supabase distincts (à provisionner via Lovable Cloud), secrets uniquement dans la plateforme, jamais dans le code.
-
-**Definition of Done d'une tâche** :
-1. Code + tests + docs domaine mis à jour.
-2. Aucune violation de la matrice de dépendances (script archi).
-3. Migration testée `down/up`.
-4. RLS validée par `supabase--linter`.
-5. Un scénario Playwright ou test unitaire couvre le happy path.
-6. PR référence `TASK-ID` + docs source consultés.
+- API : `src/routes/api/v1/<domaine>/<ressource>.ts`, réponses `{ success, data, meta }`, erreurs `{ success:false, error:{code,message,details} }`, pagination `page`/`page_size`, tri `?sort=-created_at`.
+- Domaine : `entities/`, `repositories/` (`*.local.ts` Dexie, `*.remote.ts` Supabase), `use-cases/`, `hooks/`, `components/`, `index.ts` barrel unique.
+- Interdits : import Supabase hors `*.remote.ts` et routes API ; import offline hors `*.local.ts` ; import cross-domaine hors barrel.
+- Définition de « terminé » par lot : code + tests du chemin nominal + doc domaine + migration testée + linter DB propre.
 
 ---
 
-## 5. Livrable de sortie
+## Prochaine étape
 
-À la clôture de la Phase 9 :
-- Vitala V1 en production, domaines UDI + Flash + Mission + Trust + Messaging + Notification opérationnels, offline-first vérifié, intelligence de base branchée.
-- Toute la doc `docs/` reste la source de vérité ; ce plan est archivé comme `docs/roadmap/V1-DELIVERED.md`.
-- Backlog V2 (Organizations avancé, API publique, Flutter, marketplace) ouvert.
+Dis-moi par quel lot on commence (je recommande le **Lot 1**), et je l'exécute tâche par tâche.
