@@ -58,12 +58,6 @@ const TYPES: { id: FlashType; label: string; icon: typeof Zap; tint: string }[] 
 
 const DURATIONS = ["Flash 1h", "24h", "7 jours"] as const;
 
-const RECENT = [
-  { type: "sale", title: "iPhone 13 — état neuf", price: "420 €", where: "Lyon 7", time: "2 min" },
-  { type: "service", title: "Cours de guitare à domicile", price: "25 €/h", where: "Paris 11", time: "8 min" },
-  { type: "urgent", title: "Recherche garde chien ce soir", price: "—", where: "Bordeaux", time: "14 min" },
-  { type: "promo", title: "-30% café torréfié maison", price: "9 €", where: "Marseille", time: "21 min" },
-] as const;
 
 const SCAN_RESULTS = [
   { title: "Électricien dispo ce soir", dist: "0.4 km", tag: "Service", tint: "var(--scan)", time: "il y a 3 min" },
