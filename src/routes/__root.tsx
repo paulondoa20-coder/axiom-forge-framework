@@ -127,6 +127,8 @@ function RootComponent() {
     // Offline outbox: register per-domain handlers and start auto-drain.
     registerMessagingSync();
     registerNotificationSync();
+    registerPublicationSync();
+
   }, []);
 
   return (
