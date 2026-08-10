@@ -1020,15 +1020,21 @@ function CreateSheet({ onClose }: { onClose: () => void }) {
             </div>
 
             <button
-              onClick={onClose}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-[15px] font-semibold text-[oklch(0.18_0.02_60)] transition-all active:scale-[0.98]"
+              onClick={onPublish}
+              disabled={publishing}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-[15px] font-semibold text-[oklch(0.18_0.02_60)] transition-all active:scale-[0.98] disabled:opacity-50"
               style={{ background: "var(--gradient-flash)", boxShadow: "var(--shadow-glow-flash)" }}
             >
-              <Check className="h-4 w-4" /> Publier le Flash
+              <Check className="h-4 w-4" /> {publishing ? "Publication…" : "Publier le Flash"}
             </button>
             <p className="text-center text-[11px] text-muted-foreground">
-              Aperçu uniquement — aucune donnée envoyée.
+              {publishError
+                ? publishError
+                : profile
+                  ? "Publié même hors ligne — la synchro se fait toute seule."
+                  : "Connecte-toi pour publier dans ton quartier."}
             </p>
+
           </div>
         )}
       </div>
