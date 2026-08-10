@@ -71,14 +71,19 @@ export class FlashRepository {
     const db = getDb();
     if (db) await db.flashes.put(this.toRecord(flash, true, true));
 
-    await enqueue("publication", "create_flash", {
-      id,
-      content: flash.content,
-      category: flash.category,
-      neighborhood: flash.neighborhood,
-      city: flash.city,
-      image_url: flash.imageUrl,
+    await enqueue({
+      domain: "publication",
+      operation: "create_flash",
+      payload: {
+        id,
+        content: flash.content,
+        category: flash.category,
+        neighborhood: flash.neighborhood,
+        city: flash.city,
+        image_url: flash.imageUrl,
+      },
     });
+
 
     return flash;
   }
