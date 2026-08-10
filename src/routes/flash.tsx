@@ -779,11 +779,46 @@ function CreateSheet({ onClose }: { onClose: () => void }) {
   const t = useMemo(() => TYPES.find((x) => x.id === type)!, [type]);
   const canNext = title.trim().length > 1;
 
+  const { profile } = useProfile();
+  const { publish } = useMyFlashes();
+  const [publishing, setPublishing] = useState(false);
+  const [publishError, setPublishError] = useState<string | null>(null);
+
+  const onPublish = async () => {
+    if (!profile) {
+      setPublishError("Connecte-toi pour publier ton Flash.");
+      return;
+    }
+    setPublishing(true);
+    setPublishError(null);
+    try {
+      await publish(
+        {
+          content: composeFlashContent(title, desc),
+          category: type,
+          neighborhood: location.trim() || null,
+          imageUrl: null,
+        },
+        {
+          id: profile.id,
+          displayName: profile.displayName ?? "Moi",
+          avatarUrl: profile.avatarUrl,
+        },
+      );
+      onClose();
+    } catch (err) {
+      setPublishError(err instanceof Error ? err.message : "Publication impossible.");
+    } finally {
+      setPublishing(false);
+    }
+  };
+
   const onUpload = (file?: File) => {
     if (!file) return;
     const url = URL.createObjectURL(file);
     setImage(url);
   };
+
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 backdrop-blur-sm animate-[fade-up_0.25s_var(--ease-smooth)_both]">
