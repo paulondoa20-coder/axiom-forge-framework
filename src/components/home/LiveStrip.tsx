@@ -1,36 +1,42 @@
 import { Link } from "@tanstack/react-router";
 import { LiveDot } from "@/components/ui-kit/TrustBadge";
 import { AlertCircle, Sparkles, ShieldCheck } from "lucide-react";
-
-const items = [
-  {
-    to: "/radar",
-    label: "urgents",
-    value: 12,
-    where: "dans ta zone",
-    color: "var(--radar)",
-    icon: AlertCircle,
-  },
-  {
-    to: "/flash",
-    label: "offres proches",
-    value: 5,
-    where: "< 2 km",
-    color: "var(--flash)",
-    icon: Sparkles,
-  },
-  {
-    to: "/trust",
-    label: "vérifiés",
-    value: 3,
-    where: "dispo",
-    color: "var(--trust)",
-    icon: ShieldCheck,
-  },
-
-] as const;
+import { useFlashFeed } from "@/domains/publication";
 
 export function LiveStrip() {
+  const { flashes, loading } = useFlashFeed(30);
+
+  const urgents = flashes.filter((f) => f.category === "urgent").length;
+  const offers = flashes.filter((f) => f.category === "offer" || f.category === "promo").length;
+  const voisins = new Set(flashes.map((f) => f.userId)).size;
+
+  const items = [
+    {
+      to: "/radar" as const,
+      label: "urgents",
+      value: urgents,
+      where: "dans ta zone",
+      color: "var(--radar)",
+      icon: AlertCircle,
+    },
+    {
+      to: "/flash" as const,
+      label: "offres proches",
+      value: offers,
+      where: "publiées récemment",
+      color: "var(--flash)",
+      icon: Sparkles,
+    },
+    {
+      to: "/trust" as const,
+      label: "voisins actifs",
+      value: voisins,
+      where: "cette semaine",
+      color: "var(--trust)",
+      icon: ShieldCheck,
+    },
+  ];
+
   return (
     <section className="space-y-2">
       <div className="flex items-center justify-between px-1">
@@ -58,7 +64,11 @@ export function LiveStrip() {
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-semibold leading-tight">
-                  <span style={{ color: it.color }}>{it.value}</span>{" "}
+                  {loading ? (
+                    <span className="inline-block h-3 w-6 animate-pulse rounded bg-white/10 align-middle" />
+                  ) : (
+                    <span style={{ color: it.color }}>{it.value}</span>
+                  )}{" "}
                   <span className="text-foreground/90">{it.label}</span>
                 </p>
                 <p className="text-[11px] text-muted-foreground">{it.where}</p>

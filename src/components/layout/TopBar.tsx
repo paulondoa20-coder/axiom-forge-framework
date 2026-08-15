@@ -73,6 +73,29 @@ export function TopBar() {
         </Link>
 
         <div className="flex items-center gap-1">
+          {/* Sync indicator */}
+          <span
+            title={
+              sync.pending > 0
+                ? `${SYNC_LABEL[sync.state]} · ${sync.pending} en file`
+                : SYNC_LABEL[sync.state]
+            }
+            aria-label={`Synchronisation : ${SYNC_LABEL[sync.state]}`}
+            className="mr-1 flex h-8 items-center gap-1.5 rounded-full px-2 text-[10px] font-medium text-muted-foreground"
+          >
+            <span
+              className={cn("h-1.5 w-1.5 rounded-full", sync.state === "pending" && "animate-pulse")}
+              style={{
+                background: SYNC_COLOR[sync.state],
+                boxShadow: `0 0 6px ${SYNC_COLOR[sync.state]}`,
+              }}
+            />
+            <span className="hidden sm:inline">
+              {SYNC_LABEL[sync.state]}
+              {sync.pending > 0 ? ` (${sync.pending})` : ""}
+            </span>
+          </span>
+
           {/* Theme toggle */}
           <button
             onClick={toggleTheme}
