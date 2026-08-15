@@ -3,8 +3,9 @@ import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { Bell, MessageCircle, Sparkles, UserRound, ChevronRight, Sun, Moon, Globe } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { CONVERSATIONS } from "@/lib/messaging";
-import { NOTIFICATIONS } from "@/lib/notifications";
+import { useConversations } from "@/domains/messaging";
+import { useNotifications } from "@/domains/notification";
+import { useSyncStatus, SYNC_LABEL, SYNC_COLOR } from "@/domains/sync";
 import { usePrefs, LANG_META, LANGS, type Lang } from "@/lib/preferences";
 
 export function TopBar() {
@@ -15,8 +16,12 @@ export function TopBar() {
   const isProfile = pathname === "/profile";
   const { theme, toggleTheme, lang, setLang } = usePrefs();
 
-  const unreadMsg = CONVERSATIONS.reduce((n, c) => n + c.unread, 0);
-  const unreadNotif = NOTIFICATIONS.filter((n) => !n.read).length;
+  const conversations = useConversations();
+  const { notifications } = useNotifications();
+  const sync = useSyncStatus();
+
+  const unreadMsg = conversations.reduce((n, c) => n + c.unread, 0);
+  const unreadNotif = notifications.filter((n) => !n.read).length;
   const totalUnread = unreadMsg + unreadNotif;
 
   const items = [
@@ -68,6 +73,29 @@ export function TopBar() {
         </Link>
 
         <div className="flex items-center gap-1">
+          {/* Sync indicator */}
+          <span
+            title={
+              sync.pending > 0
+                ? `${SYNC_LABEL[sync.state]} · ${sync.pending} en file`
+                : SYNC_LABEL[sync.state]
+            }
+            aria-label={`Synchronisation : ${SYNC_LABEL[sync.state]}`}
+            className="mr-1 flex h-8 items-center gap-1.5 rounded-full px-2 text-[10px] font-medium text-muted-foreground"
+          >
+            <span
+              className={cn("h-1.5 w-1.5 rounded-full", sync.state === "pending" && "animate-pulse")}
+              style={{
+                background: SYNC_COLOR[sync.state],
+                boxShadow: `0 0 6px ${SYNC_COLOR[sync.state]}`,
+              }}
+            />
+            <span className="hidden sm:inline">
+              {SYNC_LABEL[sync.state]}
+              {sync.pending > 0 ? ` (${sync.pending})` : ""}
+            </span>
+          </span>
+
           {/* Theme toggle */}
           <button
             onClick={toggleTheme}
