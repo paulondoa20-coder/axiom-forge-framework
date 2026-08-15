@@ -3,8 +3,9 @@ import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { Bell, MessageCircle, Sparkles, UserRound, ChevronRight, Sun, Moon, Globe } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { CONVERSATIONS } from "@/lib/messaging";
-import { NOTIFICATIONS } from "@/lib/notifications";
+import { useConversations } from "@/domains/messaging";
+import { useNotifications } from "@/domains/notification";
+import { useSyncStatus, SYNC_LABEL, SYNC_COLOR } from "@/domains/sync";
 import { usePrefs, LANG_META, LANGS, type Lang } from "@/lib/preferences";
 
 export function TopBar() {
@@ -15,8 +16,12 @@ export function TopBar() {
   const isProfile = pathname === "/profile";
   const { theme, toggleTheme, lang, setLang } = usePrefs();
 
-  const unreadMsg = CONVERSATIONS.reduce((n, c) => n + c.unread, 0);
-  const unreadNotif = NOTIFICATIONS.filter((n) => !n.read).length;
+  const conversations = useConversations();
+  const { notifications } = useNotifications();
+  const sync = useSyncStatus();
+
+  const unreadMsg = conversations.reduce((n, c) => n + c.unread, 0);
+  const unreadNotif = notifications.filter((n) => !n.read).length;
   const totalUnread = unreadMsg + unreadNotif;
 
   const items = [
