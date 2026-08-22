@@ -16,6 +16,7 @@ const updateSchema = z
     avatar_url: z.string().url().nullish(),
     bio: z.string().max(2000).nullish(),
     neighborhood: z.string().max(120).nullish(),
+    city: z.string().max(120).nullish(), // NEW
   })
   .strict();
 
