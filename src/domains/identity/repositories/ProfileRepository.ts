@@ -11,6 +11,7 @@ type Row = {
   avatar_url: string | null;
   bio: string | null;
   neighborhood: string | null;
+  city: string | null; // NEW
   created_at: string | null;
   updated_at: string | null;
 };
@@ -23,6 +24,7 @@ function toDto(row: Row | null | undefined): Profile | null {
     avatarUrl: row.avatar_url,
     bio: row.bio,
     neighborhood: row.neighborhood,
+    city: row.city, // NEW
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -34,11 +36,13 @@ function toRow(input: ProfileUpdateInput) {
     avatar_url?: string | null;
     bio?: string | null;
     neighborhood?: string | null;
+    city?: string | null; // NEW
   } = {};
   if (input.displayName !== undefined) out.display_name = input.displayName;
   if (input.avatarUrl !== undefined) out.avatar_url = input.avatarUrl;
   if (input.bio !== undefined) out.bio = input.bio;
   if (input.neighborhood !== undefined) out.neighborhood = input.neighborhood;
+  if (input.city !== undefined) out.city = input.city; // NEW
   return out;
 }
 
