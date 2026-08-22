@@ -5,3 +5,4 @@ export { profileRepository, ProfileRepository } from "./repositories/ProfileRepo
 export { getMyProfile } from "./use-cases/GetMyProfile";
 export { updateProfile } from "./use-cases/UpdateProfile";
 export { useProfile } from "./hooks/useProfile";
+export { ProfileEditDialog } from "./components/ProfileEditDialog";
