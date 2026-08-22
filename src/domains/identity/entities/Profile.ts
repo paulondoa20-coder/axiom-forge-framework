@@ -12,6 +12,7 @@ export interface Profile {
   avatarUrl: string | null;
   bio: string | null;
   neighborhood: string | null;
+  city: string | null; // NEW — quartier
   createdAt: string | null;
   updatedAt: string | null;
 }
@@ -21,4 +22,5 @@ export interface ProfileUpdateInput {
   avatarUrl?: string | null;
   bio?: string | null;
   neighborhood?: string | null;
+  city?: string | null; // NEW
 }
