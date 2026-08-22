@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { HubHeader } from "@/components/hub/HubHeader";
 import { SmartCard } from "@/components/ui-kit/SmartCard";
@@ -6,6 +7,7 @@ import { TrustBadge } from "@/components/ui-kit/TrustBadge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useProfile, ProfileEditDialog } from "@/domains/identity";
 import {
   UserRound,
   BadgeCheck,
@@ -36,16 +38,6 @@ export const Route = createFileRoute("/profile")({
   }),
   component: ProfilePage,
 });
-
-const USER = {
-  name: "Sophie Lambert",
-  handle: "@sophie.l",
-  city: "Lyon, FR",
-  status: "Confirmé" as "Enregistré" | "Confirmé" | "Pro",
-  activity: 72,
-  trust: 88,
-  completion: 80,
-};
 
 const STATS = [
   { label: "Flash", value: 14, icon: Zap, color: "var(--flash)" },
@@ -83,13 +75,34 @@ const QUICK_ACTIONS = [
 ] as const;
 
 const SETTINGS = [
-  { icon: Pencil, label: "Modifier profil" },
   { icon: Lock, label: "Confidentialité" },
   { icon: Bell, label: "Préférences" },
   { icon: Eye, label: "Sécurité" },
 ];
 
 function ProfilePage() {
+  const { profile, loading } = useProfile();
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+
+  // Fallback pour affichage en loading
+  const displayName = profile?.displayName || "Profil";
+  const city = profile?.city || "Localisation";
+  const neighborhood = profile?.neighborhood;
+  const bio = profile?.bio;
+
+  // Calculs dynamiques basés sur les vraies données
+  const initials = displayName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2) || "?";
+
+  const userStatus = profile ? "Confirmé" : "Enregistré";
+  const userActivity = profile ? 72 : 0;
+  const userTrust = profile ? 88 : 0;
+  const userCompletion = bio && neighborhood && city ? 100 : 80;
+
   return (
     <AppShell>
       <div className="space-y-6">
@@ -106,9 +119,9 @@ function ProfilePage() {
           <div className="flex items-start gap-3">
             <div className="relative">
               <Avatar className="h-16 w-16 ring-2 ring-[color-mix(in_oklch,var(--primary)_40%,transparent)]">
-                <AvatarImage src="" alt={USER.name} />
+                <AvatarImage src={profile?.avatarUrl || ""} alt={displayName} />
                 <AvatarFallback className="bg-gradient-to-br from-[var(--primary)]/40 to-[var(--scan)]/40 text-base font-semibold">
-                  SL
+                  {initials}
                 </AvatarFallback>
               </Avatar>
               <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--trust)] ring-2 ring-background">
@@ -117,11 +130,11 @@ function ProfilePage() {
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold leading-tight">{USER.name}</h2>
-                <TrustBadge score={USER.trust} />
+                <h2 className="text-lg font-semibold leading-tight">{displayName}</h2>
+                <TrustBadge score={userTrust} />
               </div>
               <p className="text-xs text-muted-foreground">
-                {USER.handle} · {USER.city}
+                {city} {neighborhood ? `• ${neighborhood}` : ""}
               </p>
               <span
                 className="mt-1.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium"
@@ -131,7 +144,7 @@ function ProfilePage() {
                   border: "1px solid color-mix(in oklch, var(--trust) 30%, transparent)",
                 }}
               >
-                <BadgeCheck className="h-3 w-3" /> {USER.status}
+                <BadgeCheck className="h-3 w-3" /> {userStatus}
               </span>
             </div>
           </div>
@@ -139,13 +152,18 @@ function ProfilePage() {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-[11px] text-muted-foreground">
               <span>Niveau d'activité</span>
-              <span className="font-medium text-foreground">{USER.activity}%</span>
+              <span className="font-medium text-foreground">{userActivity}%</span>
             </div>
-            <Progress value={USER.activity} className="h-1.5 bg-white/5" />
+            <Progress value={userActivity} className="h-1.5 bg-white/5" />
           </div>
 
           <div className="flex gap-2">
-            <Button size="sm" className="flex-1 rounded-xl">
+            <Button
+              size="sm"
+              className="flex-1 rounded-xl"
+              onClick={() => setEditDialogOpen(true)}
+              disabled={loading}
+            >
               <Pencil className="h-3.5 w-3.5" /> Modifier profil
             </Button>
             <Button asChild size="sm" variant="outline" className="flex-1 rounded-xl border-white/10">
@@ -157,7 +175,7 @@ function ProfilePage() {
         </SmartCard>
 
         {/* ONBOARDING */}
-        {USER.completion < 100 && (
+        {userCompletion < 100 && (
           <SmartCard className="border border-[color-mix(in_oklch,var(--primary)_25%,transparent)]">
             <div className="flex items-start gap-3">
               <div
@@ -174,9 +192,9 @@ function ProfilePage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Progress value={USER.completion} className="h-1.5 flex-1 bg-white/5" />
+                  <Progress value={userCompletion} className="h-1.5 flex-1 bg-white/5" />
                   <span className="text-[11px] font-medium" style={{ color: "var(--primary)" }}>
-                    {USER.completion}%
+                    {userCompletion}%
                   </span>
                 </div>
               </div>
@@ -211,8 +229,8 @@ function ProfilePage() {
           <SmartCard className="space-y-3">
             <div className="grid grid-cols-4 gap-1.5">
               {LEVELS.map((lvl, i) => {
-                const active = lvl.label === USER.status;
-                const reached = i <= LEVELS.findIndex((l) => l.label === USER.status);
+                const active = lvl.label === userStatus;
+                const reached = i <= LEVELS.findIndex((l) => l.label === userStatus);
                 return (
                   <div
                     key={lvl.key}
@@ -271,7 +289,7 @@ function ProfilePage() {
                 </div>
               </div>
               <span className="text-2xl font-semibold" style={{ color: "var(--trust)" }}>
-                {USER.trust}
+                {userTrust}
               </span>
             </div>
             <div className="space-y-2">
@@ -368,6 +386,9 @@ function ProfilePage() {
           </SmartCard>
         </section>
       </div>
+
+      {/* Edit Dialog */}
+      <ProfileEditDialog open={editDialogOpen} onOpenChange={setEditDialogOpen} />
     </AppShell>
   );
 }
