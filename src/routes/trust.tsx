@@ -4,27 +4,8 @@ import { HubHeader } from "@/components/hub/HubHeader";
 import { SmartCard } from "@/components/ui-kit/SmartCard";
 import { TrustBadge } from "@/components/ui-kit/TrustBadge";
 import { Button } from "@/components/ui/button";
-import {
-  ShieldCheck,
-  BadgeCheck,
-  Lock,
-  Clock,
-  Zap,
-  Eye,
-  FileCheck,
-  Sparkles,
-  MessageCircle,
-  Bookmark,
-  Share2,
-  LifeBuoy,
-  Flag,
-  HelpCircle,
-  Calendar,
-  CheckCircle2,
-  Activity,
-  Image as ImageIcon,
-  Award,
-} from "lucide-react";
+import { useTrustProfile } from "@/domains/trust";
+import { ShieldCheck, BadgeCheck, Lock, Clock, Zap, Eye, FileCheck, Sparkles, MessageCircle, Bookmark, Share2, LifeBuoy, Flag, Circle as HelpCircle, Calendar, CircleCheck as CheckCircle2, Activity, Image as ImageIcon, Award } from "lucide-react";
 
 export const Route = createFileRoute("/trust")({
   head: () => ({
@@ -36,68 +17,12 @@ export const Route = createFileRoute("/trust")({
   component: TrustPage,
 });
 
-const PROFILE = {
-  name: "Atelier Léa Moreau",
-  handle: "@lea.atelier",
-  role: "Service de couture · Paris 11e",
-  score: 92,
-  status: "Fiable",
+const BADGE_ICONS: Record<string, typeof BadgeCheck> = {
+  verified: BadgeCheck,
+  active: Activity,
+  trusted: ShieldCheck,
+  professional: Award,
 };
-
-const SCORES = [
-  { label: "Fiabilité", value: 94 },
-  { label: "Activité", value: 88 },
-  { label: "Transparence", value: 96 },
-  { label: "Réactivité", value: 90 },
-];
-
-const VERIFICATIONS = [
-  { label: "Identité vérifiée", icon: BadgeCheck, ok: true },
-  { label: "Activité confirmée", icon: CheckCircle2, ok: true },
-  { label: "Informations complètes", icon: FileCheck, ok: true },
-  { label: "Historique actif", icon: Activity, ok: true },
-];
-
-const BADGES = [
-  { label: "Verified", icon: BadgeCheck },
-  { label: "Active", icon: Activity },
-  { label: "Trusted", icon: ShieldCheck },
-  { label: "Professional", icon: Award },
-];
-
-const INDICATORS = [
-  { label: "Réponse moyenne", value: "< 1h", pct: 92, icon: Zap },
-  { label: "Satisfaction", value: "98%", pct: 98, icon: Sparkles },
-  { label: "Transparence infos", value: "Complète", pct: 96, icon: Eye },
-  { label: "Activité récente", value: "Aujourd'hui", pct: 88, icon: Clock },
-];
-
-const FEEDBACKS = [
-  { name: "Maya R.", text: "Travail soigné, communication parfaite.", tags: ["professionnel", "clair"] },
-  { name: "Tom B.", text: "Très rapide, exactement ce que je cherchais.", tags: ["rapide", "fiable"] },
-  { name: "Inès D.", text: "Conseils précis et délais respectés.", tags: ["professionnel", "fiable"] },
-];
-
-const PROOFS = [
-  { label: "Certification métier", icon: Award },
-  { label: "Pièce d'identité", icon: BadgeCheck },
-  { label: "Atelier — photo", icon: ImageIcon },
-  { label: "Assurance pro", icon: FileCheck },
-];
-
-const TIMELINE = [
-  { when: "Aujourd'hui", text: "Profil mis à jour" },
-  { when: "Hier", text: "Nouvelle interaction confirmée" },
-  { when: "3 j", text: "Vérification d'identité renouvelée" },
-  { when: "1 sem", text: "Certification ajoutée" },
-];
-
-const TRANSPARENCY = [
-  { label: "Disponibilité", value: "Lun–Sam" },
-  { label: "Horaires", value: "9h – 19h" },
-  { label: "Délai moyen", value: "2 jours" },
-  { label: "Politique", value: "Retour 14j" },
-];
 
 function ScoreBar({ value, label }: { value: number; label: string }) {
   return (
@@ -117,6 +42,18 @@ function ScoreBar({ value, label }: { value: number; label: string }) {
 }
 
 function TrustPage() {
+  const { profile, feedbacks, loading } = useTrustProfile();
+
+  if (loading && !profile) {
+    return (
+      <AppShell>
+        <div className="flex items-center justify-center py-20">
+          <span className="h-6 w-6 animate-spin rounded-full border-2 border-white/10 border-t-[var(--trust)]" />
+        </div>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell>
       <div className="space-y-6 animate-[fade-up_0.5s_var(--ease-smooth)_both]">
@@ -137,10 +74,12 @@ function TrustPage() {
             />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
-                <h2 className="truncate text-base font-semibold">{PROFILE.name}</h2>
-                <BadgeCheck className="h-4 w-4 shrink-0" style={{ color: "var(--trust)" }} />
+                <h2 className="truncate text-base font-semibold">{profile.name}</h2>
+                {profile.verified && (
+                  <BadgeCheck className="h-4 w-4 shrink-0" style={{ color: "var(--trust)" }} />
+                )}
               </div>
-              <p className="text-xs text-muted-foreground">{PROFILE.role}</p>
+              <p className="text-xs text-muted-foreground">{profile.role}</p>
               <div className="mt-1 flex items-center gap-2">
                 <span
                   className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium"
@@ -150,12 +89,12 @@ function TrustPage() {
                   }}
                 >
                   <span className="h-1.5 w-1.5 rounded-full bg-[var(--trust)]" />
-                  {PROFILE.status}
+                  {profile.status}
                 </span>
-                <span className="text-[11px] text-muted-foreground">{PROFILE.handle}</span>
+                <span className="text-[11px] text-muted-foreground">{profile.handle}</span>
               </div>
             </div>
-            <TrustBadge score={PROFILE.score} />
+            <TrustBadge score={profile.score} />
           </div>
 
           <div className="rounded-2xl bg-white/5 p-4">
@@ -167,11 +106,11 @@ function TrustPage() {
                 className="text-4xl font-semibold tracking-tight"
                 style={{ color: "var(--trust)" }}
               >
-                {PROFILE.score}
+                {profile.score}
               </p>
             </div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-              {SCORES.map((s) => (
+              {profile.breakdown.map((s) => (
                 <ScoreBar key={s.label} value={s.value} label={s.label} />
               ))}
             </div>
@@ -184,26 +123,23 @@ function TrustPage() {
             Statut de vérification
           </h3>
           <SmartCard className="space-y-2">
-            {VERIFICATIONS.map((v, i) => {
-              const Icon = v.icon;
-              return (
-                <div
-                  key={i}
-                  className="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2.5"
-                >
-                  <div className="flex items-center gap-2">
-                    <Icon className="h-4 w-4" style={{ color: "var(--trust)" }} />
-                    <span className="text-sm">{v.label}</span>
-                  </div>
-                  <span className="text-[11px]" style={{ color: "var(--trust)" }}>
-                    Vérifié
-                  </span>
+            {profile.verifications.map((v, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2.5"
+              >
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4" style={{ color: "var(--trust)" }} />
+                  <span className="text-sm">{v.label}</span>
                 </div>
-              );
-            })}
+                <span className="text-[11px]" style={{ color: "var(--trust)" }}>
+                  {v.verified ? "Vérifié" : "En attente"}
+                </span>
+              </div>
+            ))}
             <div className="flex flex-wrap gap-1.5 pt-1">
-              {BADGES.map((b) => {
-                const Icon = b.icon;
+              {profile.badges.map((b) => {
+                const Icon = BADGE_ICONS[b.type] ?? BadgeCheck;
                 return (
                   <span
                     key={b.label}
@@ -227,8 +163,8 @@ function TrustPage() {
         <section className="space-y-3">
           <h3 className="px-1 text-sm font-medium text-muted-foreground">Indicateurs</h3>
           <div className="grid grid-cols-2 gap-3">
-            {INDICATORS.map((ind) => {
-              const Icon = ind.icon;
+            {profile.indicators.map((ind) => {
+              const Icon = Zap;
               return (
                 <SmartCard key={ind.label} className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -255,18 +191,20 @@ function TrustPage() {
             <span className="text-[11px] text-muted-foreground">Vérifiés</span>
           </div>
           <div className="space-y-2">
-            {FEEDBACKS.map((f, i) => (
-              <SmartCard key={i} className="space-y-2">
+            {feedbacks.map((f) => (
+              <SmartCard key={f.id} className="space-y-2">
                 <div className="flex items-center gap-2">
                   <div
                     className="h-7 w-7 rounded-full"
                     style={{ background: "var(--gradient-trust)" }}
                   />
-                  <span className="text-xs font-medium">{f.name}</span>
-                  <BadgeCheck
-                    className="ml-auto h-3.5 w-3.5"
-                    style={{ color: "var(--trust)" }}
-                  />
+                  <span className="text-xs font-medium">{f.authorName}</span>
+                  {f.authorVerified && (
+                    <BadgeCheck
+                      className="ml-auto h-3.5 w-3.5"
+                      style={{ color: "var(--trust)" }}
+                    />
+                  )}
                 </div>
                 <p className="text-sm leading-snug text-foreground/85">"{f.text}"</p>
                 <div className="flex flex-wrap gap-1">
@@ -290,26 +228,25 @@ function TrustPage() {
             Preuves & transparence
           </h3>
           <div className="grid grid-cols-2 gap-3">
-            {PROOFS.map((p) => {
-              const Icon = p.icon;
-              return (
-                <SmartCard key={p.label} className="space-y-2">
-                  <div
-                    className="flex h-20 items-center justify-center rounded-xl"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, color-mix(in oklch, var(--trust) 14%, transparent), transparent)",
-                    }}
-                  >
-                    <Icon className="h-6 w-6" style={{ color: "var(--trust)" }} />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="truncate text-xs">{p.label}</span>
+            {profile.proofs.map((p) => (
+              <SmartCard key={p.label} className="space-y-2">
+                <div
+                  className="flex h-20 items-center justify-center rounded-xl"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, color-mix(in oklch, var(--trust) 14%, transparent), transparent)",
+                  }}
+                >
+                  <FileCheck className="h-6 w-6" style={{ color: "var(--trust)" }} />
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="truncate text-xs">{p.label}</span>
+                  {p.verified && (
                     <BadgeCheck className="h-3.5 w-3.5" style={{ color: "var(--trust)" }} />
-                  </div>
-                </SmartCard>
-              );
-            })}
+                  )}
+                </div>
+              </SmartCard>
+            ))}
           </div>
         </section>
 
@@ -322,7 +259,7 @@ function TrustPage() {
                 className="absolute left-[5px] top-1 bottom-1 w-px"
                 style={{ background: "color-mix(in oklch, var(--trust) 30%, transparent)" }}
               />
-              {TIMELINE.map((t, i) => (
+              {profile.timeline.map((t, i) => (
                 <li key={i} className="relative">
                   <span
                     className="absolute -left-4 top-1.5 h-2 w-2 rounded-full"
@@ -364,7 +301,7 @@ function TrustPage() {
         <section className="space-y-3">
           <h3 className="px-1 text-sm font-medium text-muted-foreground">Informations</h3>
           <SmartCard className="space-y-2">
-            {TRANSPARENCY.map((t) => (
+            {profile.transparency.map((t) => (
               <div
                 key={t.label}
                 className="flex items-center justify-between border-b border-white/5 py-2 last:border-0"
