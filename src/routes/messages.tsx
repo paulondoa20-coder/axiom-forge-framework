@@ -2,13 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import {
-  CONVERSATIONS,
   HUB_META,
   QUICK_REPLIES,
   SMART_ACTIONS,
+  useConversations,
+  useConversation,
   type Conversation,
   type HubContext,
-} from "@/lib/messaging";
+} from "@/domains/messaging";
 import { cn } from "@/lib/utils";
 import { MessageCircle, ArrowLeft, Send, Zap, Radar, ScanSearch, ShieldCheck, BadgeCheck, CheckCheck, Check, Tag, Clock, MapPin, CircleCheck as CheckCircle2, ChevronRight, CircleAlert as AlertCircle, X, Info } from "lucide-react";
 
@@ -107,12 +108,13 @@ function ReadIcon({ status }: { status: string }) {
 
 function Inbox({ onOpen }: { onOpen: (id: string) => void }) {
   const [filter, setFilter] = useState<"all" | HubContext>("all");
+  const conversations = useConversations();
 
-  const filtered = CONVERSATIONS.filter(
+  const filtered = conversations.filter(
     (c) => filter === "all" || c.context === filter,
   );
 
-  const totalUnread = CONVERSATIONS.reduce((n, c) => n + c.unread, 0);
+  const totalUnread = conversations.reduce((n, c) => n + c.unread, 0);
 
   const FILTERS: Array<{ id: "all" | HubContext; label: string }> = [
     { id: "all", label: "Tous" },
@@ -304,29 +306,20 @@ function EmptyState() {
 // ─── CHAT SCREEN ─────────────────────────────────────────────────────────────
 
 function ChatScreen({ convId, onBack }: { convId: string; onBack: () => void }) {
-  const [conv, setConv] = useState(() => CONVERSATIONS.find((c) => c.id === convId)!);
+  const { conversation: conv, loading, send, update } = useConversation(convId);
   const [input, setInput] = useState("");
   const [showActions, setShowActions] = useState(false);
   const [showContext, setShowContext] = useState(false);
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const meta = HUB_META[conv.context];
-
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [conv.messages]);
+  }, [conv?.messages]);
 
   const sendMessage = (text: string) => {
     if (!text.trim()) return;
-    const newMsg = {
-      id: `m${Date.now()}`,
-      senderId: "me",
-      text: text.trim(),
-      timestamp: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
-      status: "sent" as const,
-    };
-    setConv((prev) => ({ ...prev, messages: [...prev.messages, newMsg] }));
+    void send(text);
     setInput("");
     setShowActions(false);
   };
@@ -338,17 +331,24 @@ function ChatScreen({ convId, onBack }: { convId: string; onBack: () => void }) 
   };
 
   const resolveConv = () => {
-    setConv((prev) => ({ ...prev, status: "resolved" }));
-    const sysMsg = {
-      id: `m${Date.now()}`,
-      senderId: "system",
-      text: "Conversation marquée comme résolue.",
-      timestamp: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
-      status: "read" as const,
-      type: "system" as const,
-    };
-    setConv((prev) => ({ ...prev, messages: [...prev.messages, sysMsg], status: "resolved" }));
+    void update({ status: "resolved" });
   };
+
+  if (!conv) {
+    return (
+      <div className="flex h-[100dvh] flex-col items-center justify-center gap-3 bg-background px-6 text-center">
+        <MessageCircle className="h-8 w-8 text-muted-foreground" />
+        <p className="text-sm text-muted-foreground">
+          {loading ? "Chargement de la conversation…" : "Conversation introuvable."}
+        </p>
+        <button onClick={onBack} className="text-sm underline">
+          Retour aux messages
+        </button>
+      </div>
+    );
+  }
+
+  const meta = HUB_META[conv.context];
 
   return (
     <div className="flex h-[100dvh] flex-col bg-background animate-[fade-up_0.3s_var(--ease-smooth)_both]">
