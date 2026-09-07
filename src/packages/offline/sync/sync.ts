@@ -1,4 +1,4 @@
-import { pending, markInFlight, markDone, markFailed } from "../outbox/outbox";
+import { pending, markInFlight, markDone, markFailed, failed, requeue } from "../outbox/outbox";
 import { getDb } from "../dexie/db";
 
 /**
@@ -51,8 +51,35 @@ async function recordConflict(
   });
 }
 
+/** Max automatic retries before an entry waits for an explicit user retry. */
+export const MAX_AUTO_ATTEMPTS = 5;
+
+/** Exponential backoff (capped at 5 min) before auto-retrying a failed entry. */
+function backoffMs(attempts: number): number {
+  return Math.min(5 * 60_000, 5_000 * 2 ** Math.max(0, attempts - 1));
+}
+
+/**
+ * Automatic recovery — puts failed entries back in the queue once their
+ * backoff window has elapsed and they are still under the attempt cap.
+ */
+export async function recoverFailed(): Promise<number> {
+  const rows = await failed();
+  const now = Date.now();
+  let requeued = 0;
+  for (const row of rows) {
+    if (row.attempts >= MAX_AUTO_ATTEMPTS) continue;
+    const lastTry = row.createdAt + row.attempts * 1_000;
+    if (now - lastTry < backoffMs(row.attempts)) continue;
+    await requeue(row.id);
+    requeued += 1;
+  }
+  return requeued;
+}
+
 export async function drain() {
   if (typeof window === "undefined") return;
+  await recoverFailed();
   const entries = await pending();
   for (const entry of entries) {
     const key = `${entry.domain}:${entry.operation}`;

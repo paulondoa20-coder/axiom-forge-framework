@@ -8,5 +8,10 @@ export { sendMessage } from "./use-cases/SendMessage";
 export type { SendMessageInput, SendMessagePayload } from "./use-cases/SendMessage";
 export { useConversations } from "./hooks/useConversations";
 export { registerMessagingSync } from "./services/registerHandlers";
-export { loadConversation, acknowledgeConversation } from "./use-cases/LoadConversation";
+export {
+  loadConversation,
+  loadOlderMessages,
+  acknowledgeConversation,
+  retryFailedMessages,
+} from "./use-cases/LoadConversation";
 export { useConversation } from "./hooks/useConversation";

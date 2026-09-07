@@ -57,7 +57,14 @@ export const sendMessageRemote = createServerFn({ method: "POST" })
     return { success: true, data: { message_id: row.id, deduped: false } };
   });
 
-const listMessagesSchema = z.object({ conversation_id: z.string().uuid() }).strict();
+const listMessagesSchema = z
+  .object({
+    conversation_id: z.string().uuid(),
+    /** Cursor: return messages strictly older than this ISO timestamp. */
+    before: z.string().datetime().optional(),
+    limit: z.number().int().min(1).max(100).optional(),
+  })
+  .strict();
 
 /** Conversations the signed-in user belongs to, with members and last message. */
 export const listMyConversations = createServerFn({ method: "GET" })
@@ -117,12 +124,21 @@ export const listConversationMessages = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => listMessagesSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const { data: rows, error } = await context.supabase
+    const limit = data.limit ?? 30;
+    let query = context.supabase
       .from("messages")
       .select("id, conversation_id, sender_id, content, created_at, status, client_message_id")
       .eq("conversation_id", data.conversation_id)
-      .order("created_at", { ascending: true })
-      .limit(500);
+      .order("created_at", { ascending: false })
+      .limit(limit + 1);
+    if (data.before) query = query.lt("created_at", data.before);
+
+    const { data: rows, error } = await query;
     if (error) throw new Error(error.message);
-    return { success: true, data: rows ?? [], me: context.userId };
+
+    const page = rows ?? [];
+    const hasMore = page.length > limit;
+    const slice = hasMore ? page.slice(0, limit) : page;
+    // Oldest → newest for rendering.
+    return { success: true, data: slice.reverse(), hasMore, me: context.userId };
   });
