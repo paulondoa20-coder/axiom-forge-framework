@@ -1,4 +1,5 @@
-import { getDb, type ConversationRecord } from "@/packages/offline";
+import { getDb, entriesByDomain, requeueFailed, drain, type ConversationRecord } from "@/packages/offline";
+import { supabase } from "@/integrations/supabase/client";
 import { listMyConversations, listConversationMessages } from "@/lib/messaging.functions";
 import type { Conversation } from "../entities/Conversation";
 import type { Message } from "../entities/Message";
@@ -65,8 +66,19 @@ function toMessageDto(row: RemoteMessage, meId: string): Message {
     senderId: row.sender_id === meId ? "me" : row.sender_id,
     text: row.content,
     timestamp: formatTs(row.created_at),
+    createdAt: row.created_at,
     status: row.status === "READ" ? "read" : row.status === "DELIVERED" ? "delivered" : "sent",
   };
+}
+
+/** Merge two message lists, de-duplicated by id and ordered oldest → newest. */
+function mergeMessages(a: Message[], b: Message[]): Message[] {
+  const byId = new Map<string, Message>();
+  for (const m of [...a, ...b]) {
+    const prev = byId.get(m.id);
+    byId.set(m.id, prev ? { ...prev, ...m } : m);
+  }
+  return [...byId.values()].sort((x, y) => (x.createdAt ?? "").localeCompare(y.createdAt ?? ""));
 }
 
 function toConversationDto(row: RemoteConv, existing?: Conversation): Conversation {
@@ -152,17 +164,28 @@ export class ConversationRepository {
     return CONVERSATION_SEED.find((c) => c.id === id);
   }
 
-  /** Fetch remote messages for one conversation and mirror them locally. */
-  async loadMessages(id: string): Promise<Conversation | undefined> {
+  /**
+   * Fetch one page of remote messages and mirror it locally.
+   * `before` loads older history (progressive pagination); locally queued
+   * messages (pending/failed) are always preserved.
+   */
+  async loadMessages(
+    id: string,
+    opts: { before?: string; limit?: number } = {},
+  ): Promise<{ conversation: Conversation | undefined; hasMore: boolean }> {
     const current = await this.get(id);
     try {
-      const res = (await listConversationMessages({ data: { conversation_id: id } })) as {
-        success: boolean;
-        data: RemoteMessage[];
-        me: string;
-      };
-      if (!res?.success || !current) return current;
-      const messages = res.data.map((m) => toMessageDto(m, res.me));
+      const res = (await listConversationMessages({
+        data: { conversation_id: id, ...(opts.before ? { before: opts.before } : {}), limit: opts.limit ?? 30 },
+      })) as { success: boolean; data: RemoteMessage[]; hasMore: boolean; me: string };
+      if (!res?.success || !current) return { conversation: current, hasMore: false };
+
+      const remote = res.data.map((m) => toMessageDto(m, res.me));
+      const queued = current.messages.filter(
+        (m) => (m.status === "pending" || m.status === "failed") && !remote.some((r) => r.id === m.id),
+      );
+      const base = opts.before ? current.messages : queued;
+      const messages = mergeMessages(base, remote);
       const last = messages[messages.length - 1];
       const updated: Conversation = {
         ...current,
@@ -171,10 +194,63 @@ export class ConversationRepository {
         lastTs: last?.timestamp ?? current.lastTs,
       };
       await this.upsert(updated);
-      return updated;
+      return { conversation: updated, hasMore: Boolean(res.hasMore) };
     } catch {
-      return current;
+      return { conversation: current, hasMore: false };
     }
+  }
+
+  /** Reconcile local delivery statuses with the outbox (pending/failed/sent). */
+  async syncOutboxStatuses(id: string): Promise<Conversation | undefined> {
+    const conv = await this.get(id);
+    if (!conv) return undefined;
+    const entries = await entriesByDomain("messaging");
+    const byOutboxId = new Map(entries.map((e) => [e.id, e]));
+    let changed = false;
+    const messages = conv.messages.map((m) => {
+      if (!m.outboxId) return m;
+      const entry = byOutboxId.get(m.outboxId);
+      const next: Message["status"] = !entry
+        ? m.status === "pending" || m.status === "failed"
+          ? "sent"
+          : m.status
+        : entry.status === "failed"
+          ? "failed"
+          : "pending";
+      if (next === m.status) return m;
+      changed = true;
+      return { ...m, status: next };
+    });
+    if (!changed) return conv;
+    const updated = { ...conv, messages };
+    await this.upsert(updated);
+    return updated;
+  }
+
+  /** Requeue every failed messaging entry and drain the outbox now. */
+  async retryFailed(): Promise<number> {
+    const count = await requeueFailed("messaging");
+    await drain();
+    return count;
+  }
+
+  /**
+   * Realtime — new messages of one conversation, pushed by the server.
+   * Returns an unsubscribe function; no-op on the server.
+   */
+  subscribe(id: string, onChange: () => void): () => void {
+    if (typeof window === "undefined") return () => {};
+    const channel = supabase
+      .channel(`conversation:${id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "messages", filter: `conversation_id=eq.${id}` },
+        () => onChange(),
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
   }
 
   async upsert(conv: Conversation): Promise<void> {
