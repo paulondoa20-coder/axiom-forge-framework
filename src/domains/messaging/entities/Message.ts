@@ -14,6 +14,8 @@ export interface Message {
   text: string;
   timestamp: string;
   status: MsgStatus;
+  /** ISO creation timestamp — used as the pagination cursor. */
+  createdAt?: string;
   /** Outbox entry id while the message is queued (pending/failed). */
   outboxId?: string;
   type?: "text" | "action" | "system";

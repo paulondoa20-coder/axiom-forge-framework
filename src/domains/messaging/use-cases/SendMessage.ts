@@ -42,7 +42,8 @@ export async function sendMessage(input: SendMessageInput): Promise<Message> {
     senderId: ME_ID,
     text: input.text,
     timestamp: input.timestamp ?? new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    status: "sent",
+    createdAt: new Date().toISOString(),
+    status: "pending",
   };
 
   const updated = {
@@ -58,6 +59,11 @@ export async function sendMessage(input: SendMessageInput): Promise<Message> {
     clientMessageId,
     content: input.text,
   };
-  await enqueue({ domain: "messaging", operation: "send_message", payload });
-  return msg;
+  const outboxId = await enqueue({ domain: "messaging", operation: "send_message", payload });
+  const withOutbox = { ...msg, outboxId };
+  await conversationRepository.upsert({
+    ...updated,
+    messages: updated.messages.map((m) => (m.id === msg.id ? withOutbox : m)),
+  });
+  return withOutbox;
 }
