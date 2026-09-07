@@ -20,6 +20,6 @@ export {
   requeueFailed,
 } from "./outbox/outbox";
 export type { OutboxEntry } from "./outbox/outbox";
-export { drain, startAutoSync, registerHandler } from "./sync/sync";
+export { drain, startAutoSync, registerHandler, recoverFailed, MAX_AUTO_ATTEMPTS } from "./sync/sync";
 export type { OutboxHandler } from "./sync/sync";
 export { BaseRepository } from "./repositories/BaseRepository";
