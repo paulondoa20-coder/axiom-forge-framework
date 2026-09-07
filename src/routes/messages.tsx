@@ -99,10 +99,23 @@ function TrustChip({ score, verified }: { score: number; verified: boolean }) {
 // ─── Read indicator ───────────────────────────────────────────────────────────
 
 function ReadIcon({ status }: { status: string }) {
-  if (status === "read") return <CheckCheck className="h-3 w-3 text-[var(--scan)]" />;
-  if (status === "delivered") return <CheckCheck className="h-3 w-3 text-muted-foreground" />;
-  return <Check className="h-3 w-3 text-muted-foreground" />;
+  if (status === "pending")
+    return <Clock className="h-3 w-3 text-muted-foreground" aria-label="En attente d'envoi" />;
+  if (status === "failed")
+    return <AlertCircle className="h-3 w-3 text-[var(--live)]" aria-label="Échec de l'envoi" />;
+  if (status === "read") return <CheckCheck className="h-3 w-3 text-[var(--scan)]" aria-label="Lu" />;
+  if (status === "delivered")
+    return <CheckCheck className="h-3 w-3 text-muted-foreground" aria-label="Remis" />;
+  return <Check className="h-3 w-3 text-muted-foreground" aria-label="Envoyé" />;
 }
+
+const STATUS_LABEL: Record<string, string> = {
+  pending: "En attente",
+  failed: "Échec",
+  sent: "Envoyé",
+  delivered: "Remis",
+  read: "Lu",
+};
 
 // ─── INBOX ────────────────────────────────────────────────────────────────────
 
@@ -306,7 +319,17 @@ function EmptyState() {
 // ─── CHAT SCREEN ─────────────────────────────────────────────────────────────
 
 function ChatScreen({ convId, onBack }: { convId: string; onBack: () => void }) {
-  const { conversation: conv, loading, send, update } = useConversation(convId);
+  const {
+    conversation: conv,
+    loading,
+    loadingMore,
+    hasMore,
+    hasFailed,
+    loadOlder,
+    retry,
+    send,
+    update,
+  } = useConversation(convId);
   const [input, setInput] = useState("");
   const [showActions, setShowActions] = useState(false);
   const [showContext, setShowContext] = useState(false);
@@ -420,8 +443,35 @@ function ChatScreen({ convId, onBack }: { convId: string; onBack: () => void }) 
         )}
       </div>
 
+      {/* ── Failed-send banner ── */}
+      {hasFailed && (
+        <div className="mx-4 mt-3 flex items-center justify-between gap-3 rounded-xl bg-[color-mix(in_oklch,var(--live)_14%,transparent)] px-3 py-2">
+          <span className="flex min-w-0 items-center gap-2 text-[12px] text-foreground/90">
+            <AlertCircle className="h-3.5 w-3.5 shrink-0 text-[var(--live)]" />
+            <span className="truncate">Certains messages n'ont pas pu partir.</span>
+          </span>
+          <button
+            onClick={() => void retry()}
+            className="shrink-0 rounded-full bg-white/10 px-3 py-1 text-[12px] font-medium transition hover:bg-white/16"
+          >
+            Réessayer
+          </button>
+        </div>
+      )}
+
       {/* ── Messages ── */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
+        {hasMore && (
+          <div className="flex justify-center pb-3">
+            <button
+              onClick={() => void loadOlder()}
+              disabled={loadingMore}
+              className="rounded-full bg-white/8 px-4 py-1.5 text-[12px] text-muted-foreground transition hover:bg-white/14 disabled:opacity-60"
+            >
+              {loadingMore ? "Chargement…" : "Voir les messages précédents"}
+            </button>
+          </div>
+        )}
         {conv.messages.map((msg, i) => {
           const isMe = msg.senderId === "me";
           const isSystem = msg.type === "system";
@@ -483,9 +533,24 @@ function ChatScreen({ convId, onBack }: { convId: string; onBack: () => void }) 
                     msg.text
                   )}
                 </div>
-                <div className="mt-0.5 flex items-center gap-1 px-1">
+                <div className="mt-0.5 flex flex-wrap items-center gap-1 px-1">
                   <span className="text-[10px] text-muted-foreground">{msg.timestamp}</span>
-                  {isMe && <ReadIcon status={msg.status} />}
+                  {isMe && (
+                    <>
+                      <ReadIcon status={msg.status} />
+                      <span className="text-[10px] text-muted-foreground">
+                        {STATUS_LABEL[msg.status] ?? ""}
+                      </span>
+                      {msg.status === "failed" && (
+                        <button
+                          onClick={() => void retry()}
+                          className="text-[10px] font-medium text-[var(--live)] underline underline-offset-2"
+                        >
+                          Renvoyer
+                        </button>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             </div>
