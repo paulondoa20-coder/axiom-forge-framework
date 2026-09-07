@@ -59,3 +59,34 @@ export async function markFailed(id: string, error: string) {
     lastError: error,
   });
 }
+
+/** All entries of one domain (any status) — used for UI status mirroring. */
+export async function entriesByDomain(domain: string): Promise<OutboxRecord[]> {
+  const db = getDb();
+  if (!db) return [];
+  return db.outbox.where("domain").equals(domain).sortBy("createdAt");
+}
+
+/** Failed entries, optionally scoped to a domain. */
+export async function failed(domain?: string): Promise<OutboxRecord[]> {
+  const db = getDb();
+  if (!db) return [];
+  const rows = await db.outbox.where("status").equals("failed").toArray();
+  return (domain ? rows.filter((r) => r.domain === domain) : rows).sort(
+    (a, b) => a.createdAt - b.createdAt,
+  );
+}
+
+/** Put a failed/in-flight entry back in the pending queue. */
+export async function requeue(id: string): Promise<void> {
+  const db = getDb();
+  if (!db) return;
+  await db.outbox.update(id, { status: "pending", lastError: undefined });
+}
+
+/** Requeue every failed entry (optionally of one domain). Returns the count. */
+export async function requeueFailed(domain?: string): Promise<number> {
+  const rows = await failed(domain);
+  for (const row of rows) await requeue(row.id);
+  return rows.length;
+}
