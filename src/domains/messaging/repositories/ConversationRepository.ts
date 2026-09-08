@@ -8,6 +8,17 @@ import { CONVERSATION_SEED } from "../data/seed";
 
 const TABLE = "conversations";
 
+/** Protected server fns 401 without a session: only call them when signed in. */
+async function hasSession(): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+  try {
+    const { data } = await supabase.auth.getSession();
+    return Boolean(data.session?.access_token);
+  } catch {
+    return false;
+  }
+}
+
 /** Remote row shapes (kept local — the DTO is the public contract). */
 type RemoteConv = {
   conversation: {
