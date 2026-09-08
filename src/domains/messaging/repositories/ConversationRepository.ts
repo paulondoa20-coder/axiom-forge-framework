@@ -139,6 +139,7 @@ export class ConversationRepository {
    * caller can fall back on the local mirror.
    */
   async syncFromRemote(): Promise<Conversation[] | null> {
+    if (!(await hasSession())) return null;
     try {
       const res = (await listMyConversations()) as { success: boolean; data: RemoteConv[] };
       if (!res?.success) return null;
