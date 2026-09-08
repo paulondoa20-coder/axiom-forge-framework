@@ -3,3 +3,4 @@ export type { AppRole } from "./roles";
 export { policies, ForbiddenError } from "./policies";
 export type { Actor } from "./policies";
 export { requireRole } from "./guards";
+export { hasSession, onIdentityChange } from "./session";
