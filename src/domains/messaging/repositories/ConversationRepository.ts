@@ -8,6 +8,17 @@ import { CONVERSATION_SEED } from "../data/seed";
 
 const TABLE = "conversations";
 
+/** Protected server fns 401 without a session: only call them when signed in. */
+async function hasSession(): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+  try {
+    const { data } = await supabase.auth.getSession();
+    return Boolean(data.session?.access_token);
+  } catch {
+    return false;
+  }
+}
+
 /** Remote row shapes (kept local — the DTO is the public contract). */
 type RemoteConv = {
   conversation: {
@@ -128,6 +139,7 @@ export class ConversationRepository {
    * caller can fall back on the local mirror.
    */
   async syncFromRemote(): Promise<Conversation[] | null> {
+    if (!(await hasSession())) return null;
     try {
       const res = (await listMyConversations()) as { success: boolean; data: RemoteConv[] };
       if (!res?.success) return null;
@@ -174,6 +186,7 @@ export class ConversationRepository {
     opts: { before?: string; limit?: number } = {},
   ): Promise<{ conversation: Conversation | undefined; hasMore: boolean }> {
     const current = await this.get(id);
+    if (!(await hasSession())) return { conversation: current, hasMore: false };
     try {
       const res = (await listConversationMessages({
         data: { conversation_id: id, ...(opts.before ? { before: opts.before } : {}), limit: opts.limit ?? 30 },
