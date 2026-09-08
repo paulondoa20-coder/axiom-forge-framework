@@ -186,6 +186,7 @@ export class ConversationRepository {
     opts: { before?: string; limit?: number } = {},
   ): Promise<{ conversation: Conversation | undefined; hasMore: boolean }> {
     const current = await this.get(id);
+    if (!(await hasSession())) return { conversation: current, hasMore: false };
     try {
       const res = (await listConversationMessages({
         data: { conversation_id: id, ...(opts.before ? { before: opts.before } : {}), limit: opts.limit ?? 30 },
