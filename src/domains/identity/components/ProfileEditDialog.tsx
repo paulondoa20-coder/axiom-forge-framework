@@ -22,16 +22,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useProfile } from "../hooks/useProfile";
 
-/**
- * ProfileEditDialog — modal form for editing profile (nom, bio, quartier, ville).
- * Uses useProfile().save() to persist changes server-side.
- */
-
 const profileEditSchema = z.object({
   displayName: z.string().min(1, "Nom requis").max(80),
+  handle: z.string().min(2, "Min 2 caractères").max(40).optional().nullable(),
+  headline: z.string().max(120).optional().nullable(),
   bio: z.string().max(2000).optional().nullable(),
   neighborhood: z.string().max(120).optional().nullable(),
   city: z.string().max(120).optional().nullable(),
+  country: z.string().max(120).optional().nullable(),
 });
 
 type ProfileEditFormData = z.infer<typeof profileEditSchema>;
@@ -50,15 +48,21 @@ export function ProfileEditDialog({ open, onOpenChange }: ProfileEditDialogProps
     resolver: zodResolver(profileEditSchema),
     defaultValues: {
       displayName: profile?.displayName || "",
+      handle: profile?.handle || "",
+      headline: profile?.headline || "",
       bio: profile?.bio || "",
       neighborhood: profile?.neighborhood || "",
       city: profile?.city || "",
+      country: profile?.country || "",
     },
     values: {
       displayName: profile?.displayName || "",
+      handle: profile?.handle || "",
+      headline: profile?.headline || "",
       bio: profile?.bio || "",
       neighborhood: profile?.neighborhood || "",
       city: profile?.city || "",
+      country: profile?.country || "",
     },
   });
 
@@ -68,9 +72,12 @@ export function ProfileEditDialog({ open, onOpenChange }: ProfileEditDialogProps
     try {
       await save({
         displayName: data.displayName || null,
+        handle: data.handle || null,
+        headline: data.headline || null,
         bio: data.bio || null,
         neighborhood: data.neighborhood || null,
         city: data.city || null,
+        country: data.country || null,
       });
       onOpenChange(false);
     } catch (err) {
@@ -82,7 +89,7 @@ export function ProfileEditDialog({ open, onOpenChange }: ProfileEditDialogProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Modifier profil</DialogTitle>
           <DialogDescription>
@@ -92,7 +99,6 @@ export function ProfileEditDialog({ open, onOpenChange }: ProfileEditDialogProps
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            {/* Nom */}
             <FormField
               control={form.control}
               name="displayName"
@@ -107,7 +113,38 @@ export function ProfileEditDialog({ open, onOpenChange }: ProfileEditDialogProps
               )}
             />
 
-            {/* Bio */}
+            <FormField
+              control={form.control}
+              name="handle"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Pseudo (@handle)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="sophie.l" {...field} value={field.value || ""} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="headline"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Titre / accroche</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Consultante en stratégie digitale"
+                      {...field}
+                      value={field.value || ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <FormField
               control={form.control}
               name="bio"
@@ -127,52 +164,56 @@ export function ProfileEditDialog({ open, onOpenChange }: ProfileEditDialogProps
               )}
             />
 
-            {/* Quartier */}
+            <div className="grid grid-cols-2 gap-3">
+              <FormField
+                control={form.control}
+                name="neighborhood"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Quartier</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Presqu'île" {...field} value={field.value || ""} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="city"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Ville</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Lyon" {...field} value={field.value || ""} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
             <FormField
               control={form.control}
-              name="neighborhood"
+              name="country"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Quartier</FormLabel>
+                  <FormLabel>Pays</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Presqu'île"
-                      {...field}
-                      value={field.value || ""}
-                    />
+                    <Input placeholder="France" {...field} value={field.value || ""} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* Ville */}
-            <FormField
-              control={form.control}
-              name="city"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Ville</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Lyon"
-                      {...field}
-                      value={field.value || ""}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Error */}
             {saveError && (
               <div className="rounded-lg bg-red-500/10 p-3 text-sm text-red-600">
                 {saveError}
               </div>
             )}
 
-            {/* Actions */}
             <div className="flex gap-3 pt-2">
               <Button
                 type="button"

@@ -3,6 +3,8 @@ export * from "./entities/Profile";
 export { PrefsContext, usePrefs, type PrefsCtx } from "./services/PreferencesContext";
 export { profileRepository, ProfileRepository } from "./repositories/ProfileRepository";
 export { getMyProfile } from "./use-cases/GetMyProfile";
+export { getPublicProfile } from "./use-cases/GetPublicProfile";
 export { updateProfile } from "./use-cases/UpdateProfile";
+export { upsertProfile } from "./use-cases/UpsertProfile";
 export { useProfile } from "./hooks/useProfile";
 export { ProfileEditDialog } from "./components/ProfileEditDialog";

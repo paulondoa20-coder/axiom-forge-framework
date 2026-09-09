@@ -13,10 +13,13 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 const updateSchema = z
   .object({
     display_name: z.string().min(1).max(80).nullish(),
+    handle: z.string().min(2).max(40).nullish(),
+    headline: z.string().max(120).nullish(),
     avatar_url: z.string().url().nullish(),
     bio: z.string().max(2000).nullish(),
     neighborhood: z.string().max(120).nullish(),
-    city: z.string().max(120).nullish(), // NEW
+    city: z.string().max(120).nullish(),
+    country: z.string().max(120).nullish(),
   })
   .strict();
 
@@ -30,6 +33,19 @@ export const getMyProfile = createServerFn({ method: "GET" })
       .maybeSingle();
     if (error) throw new Error(error.message);
     return data;
+  });
+
+export const getPublicProfile = createServerFn({ method: "GET" })
+  .inputValidator((input) => z.object({ userId: z.string().uuid() }).parse(input))
+  .handler(async ({ data }) => {
+    const { supabase } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", data.userId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return row;
   });
 
 export const updateMyProfile = createServerFn({ method: "POST" })
