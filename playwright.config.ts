@@ -10,5 +10,16 @@ export default defineConfig({
     trace: "off",
     viewport: { width: 390, height: 844 },
   },
-  projects: [{ name: "mobile", use: { ...devices["Pixel 5"] } }],
+  projects: [
+    {
+      name: "mobile",
+      use: {
+        ...devices["Pixel 5"],
+        // Optional override when the sandbox ships its own Chromium build.
+        launchOptions: process.env['E2E_CHROMIUM_PATH']
+          ? { executablePath: process.env['E2E_CHROMIUM_PATH'] }
+          : {},
+      },
+    },
+  ],
 });
