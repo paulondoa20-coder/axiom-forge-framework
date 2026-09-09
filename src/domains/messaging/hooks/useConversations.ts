@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { onIdentityChange } from "@/packages/auth";
 import { CONVERSATION_SEED } from "../data/seed";
 import { listConversations } from "../use-cases/ListConversations";
 import type { Conversation } from "../entities/Conversation";
@@ -12,11 +13,17 @@ export function useConversations(): Conversation[] {
 
   useEffect(() => {
     let cancelled = false;
-    void listConversations().then((data) => {
-      if (!cancelled) setConversations(data);
-    });
+    const load = () => {
+      void listConversations().then((data) => {
+        if (!cancelled) setConversations(data);
+      });
+    };
+    load();
+    // Reload from the server as soon as a session appears (or disappears).
+    const unsubscribe = onIdentityChange(load);
     return () => {
       cancelled = true;
+      unsubscribe();
     };
   }, []);
 

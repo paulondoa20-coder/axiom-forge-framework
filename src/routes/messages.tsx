@@ -11,6 +11,8 @@ import {
   type HubContext,
 } from "@/domains/messaging";
 import { cn } from "@/lib/utils";
+import { useSession } from "@/hooks/useSession";
+import { SignInBanner, SignInGate } from "@/components/ui-kit/SignInGate";
 import { MessageCircle, ArrowLeft, Send, Zap, Radar, ScanSearch, ShieldCheck, BadgeCheck, CheckCheck, Check, Tag, Clock, MapPin, CircleCheck as CheckCircle2, ChevronRight, CircleAlert as AlertCircle, X, Info } from "lucide-react";
 
 export const Route = createFileRoute("/messages")({
@@ -122,6 +124,7 @@ const STATUS_LABEL: Record<string, string> = {
 function Inbox({ onOpen }: { onOpen: (id: string) => void }) {
   const [filter, setFilter] = useState<"all" | HubContext>("all");
   const conversations = useConversations();
+  const { signedIn } = useSession();
 
   const filtered = conversations.filter(
     (c) => filter === "all" || c.context === filter,
@@ -154,6 +157,8 @@ function Inbox({ onOpen }: { onOpen: (id: string) => void }) {
           </span>
         )}
       </header>
+
+      {signedIn === false && <SignInBanner redirect="/messages" />}
 
       {/* Filter chips */}
       <div className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
