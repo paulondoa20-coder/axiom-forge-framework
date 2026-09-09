@@ -335,6 +335,7 @@ function ChatScreen({ convId, onBack }: { convId: string; onBack: () => void }) 
     send,
     update,
   } = useConversation(convId);
+  const { signedIn } = useSession();
   const [input, setInput] = useState("");
   const [showActions, setShowActions] = useState(false);
   const [showContext, setShowContext] = useState(false);
@@ -364,11 +365,24 @@ function ChatScreen({ convId, onBack }: { convId: string; onBack: () => void }) 
 
   if (!conv) {
     return (
-      <div className="flex h-[100dvh] flex-col items-center justify-center gap-3 bg-background px-6 text-center">
-        <MessageCircle className="h-8 w-8 text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">
-          {loading ? "Chargement de la conversation…" : "Conversation introuvable."}
-        </p>
+      <div className="flex h-[100dvh] flex-col items-center justify-center gap-4 bg-background px-6 text-center">
+        {loading ? (
+          <>
+            <MessageCircle className="h-8 w-8 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">Chargement de la conversation…</p>
+          </>
+        ) : signedIn === false ? (
+          <SignInGate
+            redirect="/messages"
+            title="Connecte-toi pour ouvrir cette conversation"
+            description="Sans compte, on ne peut pas charger l'historique ni les accusés de lecture."
+          />
+        ) : (
+          <>
+            <MessageCircle className="h-8 w-8 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">Conversation introuvable.</p>
+          </>
+        )}
         <button onClick={onBack} className="text-sm underline">
           Retour aux messages
         </button>
