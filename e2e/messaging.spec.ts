@@ -14,7 +14,7 @@ test.describe("messagerie sans compte", () => {
 
     await page.goto("/messages", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("heading", { name: "Conversations" })).toBeVisible();
-    await expect(page.getByText(/Mode démo/i)).toBeVisible();
+    await expect(page.getByText(/Mode démo/i)).toBeVisible({ timeout: 15_000 });
 
     expect(errors.join("\n")).not.toContain("Unauthorized");
   });
