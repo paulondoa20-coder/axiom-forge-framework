@@ -18,6 +18,7 @@ import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as FlashRouteImport } from './routes/flash'
 import { Route as CreationRouteImport } from './routes/creation'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
 
@@ -66,6 +67,11 @@ const CreationRoute = CreationRouteImport.update({
   path: '/creation',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -79,6 +85,7 @@ const ApiAssistantRoute = ApiAssistantRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/creation': typeof CreationRoute
   '/flash': typeof FlashRoute
   '/messages': typeof MessagesRoute
@@ -92,6 +99,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/creation': typeof CreationRoute
   '/flash': typeof FlashRoute
   '/messages': typeof MessagesRoute
@@ -106,6 +114,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/creation': typeof CreationRoute
   '/flash': typeof FlashRoute
   '/messages': typeof MessagesRoute
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
     | '/creation'
     | '/flash'
     | '/messages'
@@ -134,6 +144,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
     | '/creation'
     | '/flash'
     | '/messages'
@@ -147,6 +158,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/auth'
     | '/creation'
     | '/flash'
     | '/messages'
@@ -161,6 +173,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
   CreationRoute: typeof CreationRoute
   FlashRoute: typeof FlashRoute
   MessagesRoute: typeof MessagesRoute
@@ -238,6 +251,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CreationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -257,6 +277,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
   CreationRoute: CreationRoute,
   FlashRoute: FlashRoute,
   MessagesRoute: MessagesRoute,

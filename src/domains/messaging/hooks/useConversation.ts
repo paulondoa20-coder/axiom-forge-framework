@@ -7,6 +7,7 @@ import {
   retryFailedMessages,
 } from "../use-cases/LoadConversation";
 import { sendMessage as sendMessageUseCase } from "../use-cases/SendMessage";
+import { onIdentityChange } from "@/packages/auth";
 import type { Conversation } from "../entities/Conversation";
 
 const PAGE_SIZE = 30;
@@ -70,7 +71,14 @@ export function useConversation(id: string | null): UseConversationState {
     const unsubscribe = conversationRepository.subscribe(id, () => {
       void refresh();
     });
-    return unsubscribe;
+    // Re-fetch remote history as soon as the user signs in.
+    const unsubscribeIdentity = onIdentityChange(() => {
+      void refresh();
+    });
+    return () => {
+      unsubscribe();
+      unsubscribeIdentity();
+    };
   }, [id, refresh, apply]);
 
   // Delivery statuses follow the outbox (pending → sent, or failed).
