@@ -1,5 +1,14 @@
 import { test, expect } from "@playwright/test";
 
+// Skip the first-visit welcome dialog so it never covers the page under test.
+test.beforeEach(async ({ context }) => {
+  await context.addInitScript(() => {
+    if (location.hostname === "localhost") {
+      localStorage.setItem("vitala.onboarding.done.v1", "1");
+    }
+  });
+});
+
 /**
  * Messaging behaviour without an authenticated user, and after sign-in.
  * Credentials come from E2E_EMAIL / E2E_PASSWORD (never hardcode secrets).
