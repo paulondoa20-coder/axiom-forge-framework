@@ -38,8 +38,8 @@ export const getMyProfile = createServerFn({ method: "GET" })
 export const getPublicProfile = createServerFn({ method: "GET" })
   .inputValidator((input) => z.object({ userId: z.string().uuid() }).parse(input))
   .handler(async ({ data }) => {
-    const { supabase } = await import("@/integrations/supabase/client.server");
-    const { data: row, error } = await supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
       .from("profiles")
       .select("*")
       .eq("id", data.userId)
@@ -52,9 +52,12 @@ export const updateMyProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => updateSchema.parse(input))
   .handler(async ({ data, context }) => {
+    // Only columns that exist on the profiles table are persisted.
+    const { display_name, avatar_url, bio, neighborhood, city } = data;
+    const patch = { display_name, avatar_url, bio, neighborhood, city };
     const { data: row, error } = await context.supabase
       .from("profiles")
-      .update(data)
+      .update(patch)
       .eq("id", context.userId)
       .select("*")
       .single();

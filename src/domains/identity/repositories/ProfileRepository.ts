@@ -54,7 +54,7 @@ export class ProfileRepository {
   }
 
   async getById(id: string): Promise<Profile | null> {
-    const row = (await getPublicProfile({ userId: id })) as Row | null;
+    const row = (await getPublicProfile({ data: { userId: id } })) as Row | null;
     return toDto(row);
   }
 
